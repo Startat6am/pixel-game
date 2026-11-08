@@ -6,6 +6,9 @@
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
+  const characterToggle=document.getElementById("character-toggle"),characterChoices=document.getElementById("character-choices");
+  const characterButtons=[...document.querySelectorAll("[data-character]")];
+  let selectedCharacter="classic";
     const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
@@ -17,7 +20,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
+    mode=nextMode;characterChoices.classList.add("is-hidden");dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
@@ -29,6 +32,10 @@
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
   }
   function chooseMode(nextMode){reset(nextMode);start();}
+  function chooseCharacter(name){
+    selectedCharacter=name;
+    characterButtons.forEach(button=>button.classList.toggle("is-selected",button.dataset.character===name));
+  }
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
@@ -144,9 +151,16 @@
   function drawCat(){
     const x=Math.round(player.x),y=Math.round(player.y);
     ctx.save();ctx.translate(x+7,y+7);ctx.rotate(player.rot);
-    rect(-6,-5,4,5,"#f3c66a");rect(2,-5,4,5,"#f3c66a");
-    rect(-7,-2,14,10,"#f3c66a");rect(-4,5,9,3,"#f3c66a");
-    rect(-4,0,2,2,"#26334c");rect(3,0,2,2,"#26334c");rect(-1,3,2,1,"#d97872");
+    const palettes={
+      classic:{body:"#f3c66a",muzzle:"#ffe0a0",eyes:"#26334c",nose:"#d97872",accent:"#fff0bc"},
+      mint:{body:"#7ce0c3",muzzle:"#c4ffeb",eyes:"#203d4b",nose:"#ef8eaa",accent:"#e5fff6"},
+      violet:{body:"#b9a4ff",muzzle:"#e3d8ff",eyes:"#302b50",nose:"#ff9fbd",accent:"#f5efff"}
+    };
+    const fur=palettes[selectedCharacter]||palettes.classic;
+    rect(-6,-5,4,5,fur.body);rect(2,-5,4,5,fur.body);
+    rect(-7,-2,14,10,fur.body);rect(-4,5,9,3,fur.muzzle);
+    rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);rect(-1,3,2,1,fur.nose);
+    rect(-5,-4,2,2,fur.accent);
     ctx.restore();
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
@@ -182,5 +196,7 @@
   window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
   playBtn.addEventListener("click",()=>chooseMode("game"));
   trainingBtn.addEventListener("click",()=>chooseMode("training"));
+  characterToggle.addEventListener("click",()=>characterChoices.classList.toggle("is-hidden"));
+  characterButtons.forEach(button=>button.addEventListener("click",()=>chooseCharacter(button.dataset.character)));
   reset("game");requestAnimationFrame(loop);
 })();
