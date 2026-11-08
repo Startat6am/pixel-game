@@ -45,3 +45,11 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pi
  .control-btn{height:54px;min-height:54px}
  .game-footer{display:none}
 }
+
+
+.mode-choices{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.mode-choices button{min-width:116px;padding:12px 16px;border:2px solid var(--mint);border-radius:8px;background:#29465a;color:#e3fff6;font:700 13px "Courier New",monospace;letter-spacing:.1em;cursor:pointer;touch-action:manipulation}
+.mode-choices button+button{border-color:var(--pink);background:#49374a;color:#ffdce7}
+.mode-choices button:active{transform:translateY(2px);filter:brightness(1.2)}
+.jump-metrics{position:absolute;z-index:2;top:8px;left:8px;right:8px;padding:7px 8px;border:1px solid #7ce0c388;border-radius:4px;background:#101a2ddd;color:#e3fff6;text-align:center;font:700 clamp(9px,2.5vw,12px) "Courier New",monospace;letter-spacing:.04em;pointer-events:none}
+.jump-metrics.is-hidden{display:none}
