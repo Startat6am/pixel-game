@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pixel Tower — prototype</title>
+  <title>Pixel Cat — Flappy prototype</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,27 +11,25 @@
     <header class="game-header">
       <div>
         <p class="eyebrow">PIXEL-GAME / PROTOTYPE 01</p>
-        <h1>Pixel Tower</h1>
+        <h1>Pixel Cat</h1>
       </div>
       <div class="score-panel" aria-live="polite">
         <span class="score-label">SCORE</span>
         <strong id="score">0</strong>
       </div>
     </header>
-
     <div class="canvas-frame">
       <canvas id="game" width="320" height="180"
-        aria-label="Игра Pixel Tower. Нажмите, чтобы лететь вверх."></canvas>
+        aria-label="Pixel Cat. Нажмите, чтобы лететь вверх и пролетать между трубами."></canvas>
       <div class="overlay" id="overlay">
-        <p class="overlay-kicker">ENDLESS FLIGHT</p>
-        <h2 id="overlay-title">Готов к полёту?</h2>
-        <p id="overlay-hint">Кликни, нажми пробел или тапни, чтобы начать</p>
+        <p class="overlay-kicker">A TINY PIXEL FLIGHT</p>
+        <h2 id="overlay-title">Полетели?</h2>
+        <p id="overlay-hint">Кликни, тапни или нажми пробел</p>
       </div>
     </div>
-
     <footer class="game-footer">
-      <span><kbd>SPACE</kbd> / CLICK / TAP — импульс вверх</span>
-      <span>Пройди между блоками</span>
+      <span><kbd>SPACE</kbd> / CLICK / TAP — взмах</span>
+      <span>Пролетай между трубами</span>
     </footer>
   </main>
   <script src="game.js"></script>
