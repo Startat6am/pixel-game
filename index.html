@@ -18,16 +18,29 @@
         <canvas id="game" width="320" height="180" aria-label="Игровое поле"></canvas>
         <div class="jump-metrics is-hidden" id="jump-metrics">ВЫСОТА — px · ДЛИНА — px</div>
         <div class="overlay" id="overlay">
-          <p class="overlay-kicker">AUTO RUNNER</p><h2 id="overlay-title">PIXEL DASH</h2>
-          <p id="overlay-hint">ВЫБЕРИ РЕЖИМ ИГРЫ</p>
-          <div class="mode-choices" id="mode-choices"><button class="mode-button game-mode" id="play-mode" type="button"><span class="mode-icon">▶</span><span><strong>НАЧАТЬ</strong><small>Обычный забег</small></span></button><button class="mode-button training-mode" id="training-mode" type="button"><span class="mode-icon">✦</span><span><strong>ТРЕНИРОВКА</strong><small>Практика прыжков</small></span></button></div>
-          <button class="character-toggle" id="character-toggle" type="button"><span>♟</span> ВЫБРАТЬ ПЕРСОНАЖА <span class="toggle-arrow">⌄</span></button>
-          <div class="character-choices is-hidden" id="character-choices" aria-label="Выбор персонажа">
-            <button type="button" data-character="classic" class="character-option is-selected"><span class="character-swatch classic-swatch"></span><span>КЛАССИК</span></button>
-            <button type="button" data-character="mint" class="character-option"><span class="character-swatch mint-swatch"></span><span>МЯТА</span></button>
-            <button type="button" data-character="violet" class="character-option"><span class="character-swatch violet-swatch"></span><span>СУМРАК</span></button>
-          </div>
-          <span class="start-cue">PIXEL CAT DASH</span>
+          <section class="menu-screen" id="menu-screen">
+            <p class="overlay-kicker">PIXEL WORLD · AUTO RUNNER</p>
+            <h2 id="overlay-title">PIXEL DASH</h2>
+            <p id="overlay-hint">ВЫБЕРИ РЕЖИМ ИГРЫ</p>
+            <div class="mode-choices" id="mode-choices">
+              <button class="mode-button game-mode" id="play-mode" type="button"><span class="mode-icon">▶</span><span><strong>НАЧАТЬ</strong><small>Новый забег</small></span></button>
+              <button class="mode-button training-mode" id="training-mode" type="button"><span class="mode-icon">✦</span><span><strong>ТРЕНИРОВКА</strong><small>Практика прыжков</small></span></button>
+            </div>
+            <button class="character-toggle" id="character-toggle" type="button"><span>♟</span> ВЫБРАТЬ КОТА <span class="toggle-arrow">→</span></button>
+            <span class="start-cue">RUN · JUMP · DASH</span>
+          </section>
+          <section class="character-screen is-hidden" id="character-screen" aria-label="Выбор персонажа">
+            <p class="overlay-kicker">ТВОЯ КОМАНДА</p>
+            <h2>ВЫБЕРИ КОТА</h2>
+            <p class="character-subtitle">У каждого свой характер</p>
+            <div class="character-choices" id="character-choices">
+              <button type="button" data-character="classic" class="character-option is-selected"><span class="character-swatch classic-swatch"></span><span class="character-name">КЛАССИК</span><small>Золотой и смелый</small></button>
+              <button type="button" data-character="mint" class="character-option"><span class="character-swatch mint-swatch"></span><span class="character-name">МЯТА</span><small>Лёгкая и быстрая</small></button>
+              <button type="button" data-character="violet" class="character-option"><span class="character-swatch violet-swatch"></span><span class="character-name">СУМРАК</span><small>Тихий и загадочный</small></button>
+            </div>
+            <p class="upgrade-note">ЭФФЕКТЫ И УЛУЧШЕНИЯ БУДУТ ОТКРЫВАТЬСЯ ЗА ПРОХОЖДЕНИЕ</p>
+            <button class="back-button" id="back-menu" type="button">← НАЗАД</button>
+          </section>
         </div>
       </div>
     </section>
