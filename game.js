@@ -8,7 +8,7 @@
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null;
+  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
@@ -19,7 +19,7 @@
     mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.3;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
     overlay.classList.remove("is-hidden");updateMetrics();
@@ -32,7 +32,7 @@
     if(state==="gameover"){reset(mode);start();}
     start();
     if(player.grounded&&state==="playing"){
-      player.vy=-4.3;player.grounded=false;player.jumpCut=false;
+      player.vy=-4.3;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.3;
       jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;updateMetrics();
     }
   }
@@ -51,11 +51,25 @@
     if(state==="gameover")reset(mode);
     start();
     if(state!=="playing"||!dashReady)return;
-    dashTimer=15;dashReady=false;releaseJump();player.vy=Math.min(player.vy,-0.55);updateMetrics();
+    const airborne=!player.grounded;
+    const comboWindow=24;
+    const combo=airborne&&jumpAge<=comboWindow?1-jumpAge/comboWindow:0;
+    jumpHeld=false;player.jumpCut=true;
+    dashTimer=15;dashReady=false;
+    if(combo>0){
+      const angleFactor=Math.min(1,jumpPower/4.3);
+      const speedFactor=Math.min(1.5,speed/1.65);
+      const boost=(1.2+1.6*angleFactor)*speedFactor*combo;
+      player.vy=Math.min(player.vy-boost,-1.2);
+    }else{
+      player.vy=Math.min(player.vy,-0.55);
+    }
+    updateMetrics();
     for(let i=0;i<8;i++)particles.push({x:player.x,y:player.y+8,vx:-1-Math.random()*2,life:14});
   }
   function update(){
     frame++;if(state!=="playing")return;
+    if(!player.grounded)jumpAge++;else jumpAge=0;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;if(mode==="game")speed=Math.min(2.45,1.65+distance/9000);
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
