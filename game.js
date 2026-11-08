@@ -6,64 +6,81 @@
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,jumpHoldFrames=0;
+  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
     [1545,2],[1650,0],[1740,1],[1840,3],[1940,2],[2050,0],[2140,1],
     [2240,0],[2340,2],[2450,0]
   ];
-  function reset(){
+  function reset(nextMode=mode){
+    mode=nextMode;
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
-    obstacles=initial.map(([x,type])=>({x,type,width:type===3?48:0}));
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;
+    obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
-    title.textContent="PIXEL DASH";hint.textContent="НАЖМИ JUMP ИЛИ НА ИГРОВОЕ ПОЛЕ";
-    overlay.classList.remove("is-hidden");
+    title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
+    overlay.classList.remove("is-hidden");updateMetrics();
   }
   function start(){
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
   }
+  function chooseMode(nextMode){reset(nextMode);start();}
   function jump(){
-    if(state==="gameover"){reset();}
+    if(state==="gameover"){reset(mode);start();}
     start();
-    if(player.grounded){player.vy=-2.72;player.grounded=false;jumpHoldFrames=0;}
+    if(player.grounded&&state==="playing"){
+      player.vy=-4.3;player.grounded=false;player.jumpCut=false;
+      jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;updateMetrics();
+    }
+  }
+  function releaseJump(){
+    jumpHeld=false;
+    if(player&&!player.grounded&&player.vy<0&&!player.jumpCut){player.vy=Math.max(player.vy,-1.8);player.jumpCut=true;}
+  }
+  function updateMetrics(){
+    if(mode!=="training"){metricsEl.classList.add("is-hidden");return;}
+    metricsEl.classList.remove("is-hidden");
+    const stats=jumpStats||lastStats;
+    if(!stats){metricsEl.textContent="ВЫСОТА — px   ·   ДЛИНА — px";return;}
+    metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px";
   }
   function dash(){
     if(state==="gameover")reset();
     start();
     if(state!=="playing"||!dashReady)return;
-    dashTimer=15;dashReady=false;jumpHeld=false;player.vy=Math.min(player.vy,-0.55);
+    dashTimer=15;dashReady=false;releaseJump();player.vy=Math.min(player.vy,-0.55);
     for(let i=0;i<8;i++)particles.push({x:player.x,y:player.y+8,vx:-1-Math.random()*2,life:14});
   }
   function update(){
     frame++;if(state!=="playing")return;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;speed=Math.min(2.45,1.65+distance/9000);
-    if(jumpHeld&&!player.grounded&&player.vy<0&&jumpHoldFrames<9){player.vy-=0.18;jumpHoldFrames++;}
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
     player.y+=player.vy;
-    const overGap=obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
+    if(jumpStats){jumpStats.peak=Math.max(jumpStats.peak,jumpStats.startY-player.y);updateMetrics();}
+    const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){
       player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;
+      if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
-    for(const o of obstacles)o.x-=moveSpeed;
-    obstacles=obstacles.filter(o=>o.x+(o.width||24)>-30);
+    if(mode==="game")for(const o of obstacles)o.x-=moveSpeed;
+    if(mode==="game")obstacles=obstacles.filter(o=>o.x+(o.width||24)>-30);
     const far=obstacles.length?obstacles[obstacles.length-1].x:0;
-    if(far<W+400){
+    if(mode==="game"&&far<W+400){
       const x=Math.max(W+90,far+95+Math.random()*40),r=Math.random();
       const type=r<0.2?3:r<0.47?2:r<0.78?1:0;
       obstacles.push({x,type,width:type===3?42+Math.random()*12:0});
     }
     particles.forEach(p=>{p.x+=p.vx;p.life--;});particles=particles.filter(p=>p.life>0);
     const px=player.x+2,py=player.y+2,pw=player.w-4,ph=player.h-4;
-    for(const o of obstacles){
+    if(mode==="game")for(const o of obstacles){
       if(o.type===3)continue;
       const ow=o.type===2?23:o.type===1?15:0,oh=o.type===2?22:o.type===1?13:0;
       if(oh&&px<o.x+ow&&px+pw>o.x&&py<FLOOR&&py+ph>FLOOR-oh){gameOver();break;}
     }
-    if(player.y>H+18)gameOver();
+    if(mode==="game"&&player.y>H+18)gameOver();
     scoreEl.textContent=String(Math.floor(distance/10));
   }
   function gameOver(){
@@ -78,6 +95,7 @@
     for(let x=-(frame*speed%16);x<W;x+=16)rect(x,FLOOR+13,8,2,"#293957");
   }
   function drawPlatforms(){
+    if(mode==="training"){rect(0,FLOOR,W,5,"#4bba91");rect(0,FLOOR+5,W,2,"#263957");return;}
     const gaps=obstacles.filter(o=>o.type===3).map(o=>[Math.round(o.x),Math.round(o.x+o.width)]);
     let cursor=0;
     for(const [a,b] of gaps){if(a>cursor)rect(cursor,FLOOR,a-cursor,5,"#4bba91");cursor=Math.max(cursor,b);}
@@ -101,7 +119,7 @@
   }
   function draw(){
     background();drawPlatforms();particles.forEach(p=>rect(p.x,p.y,2,2,"#7ce0c3"));drawCat();
-    if(state==="playing"&&!dashReady){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/15),3,"#7ce0c3");}
+    if(state==="playing"&&!dashReady&&mode==="game"){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/15),3,"#7ce0c3");}
   }
   function loop(t){
     if(!last)last=t;acc+=Math.min(t-last,100);last=t;
@@ -119,6 +137,8 @@
     if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat){jumpHeld=true;jump();}}
     if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
   });
-  window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))jumpHeld=false;});
-  reset();requestAnimationFrame(loop);
+  window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
+  playBtn.addEventListener("click",()=>chooseMode("game"));
+  trainingBtn.addEventListener("click",()=>chooseMode("training"));
+  reset("game");requestAnimationFrame(loop);
 })();
