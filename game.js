@@ -7,7 +7,7 @@
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
   const demoBtn=document.getElementById("coyote-demo-btn"),demoBackBtn=document.getElementById("demo-back-btn");
-  const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content");
+  const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content"),demoExitBtn=document.getElementById("demo-exit-btn");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3,coyoteTimer=0,demoRunning=false,demoJumped=false,demoAge=0;
@@ -32,13 +32,14 @@
   }
   function chooseMode(nextMode){demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");reset(nextMode);start();}
   function showCoyoteDemo(){
-    demoContent.classList.add("is-hidden");modeChoices.classList.add("is-hidden");
+    demoExitBtn.classList.remove("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.add("is-hidden");
     reset("game");demoRunning=true;demoJumped=false;demoAge=0;
     state="playing";overlay.classList.add("is-hidden");
     title.textContent="COYOTE JUMP";hint.textContent="КОТИК ПЕРЕПРЫГИВАЕТ ПЕРВУЮ ЯМУ";
   }
   function finishCoyoteDemo(){
     if(!demoRunning)return;
+    demoExitBtn.classList.add("is-hidden");
     demoRunning=false;state="demofinished";
     title.textContent="COYOTE JUMP";hint.textContent="ГОТОВО! КОТИК ПРЫГНУЛ ПОСЛЕ КРАЯ ПЛАТФОРМЫ";
     demoContent.classList.remove("is-hidden");modeChoices.classList.add("is-hidden");
@@ -47,7 +48,7 @@
     if(lead)lead.textContent="ПРЫЖОК ПОСЛЕ КРАЯ — COYOTE TIME";
   }
   function hideCoyoteDemo(){
-    demoRunning=false;demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
+    demoRunning=false;demoExitBtn.classList.add("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
   }
   function jump(){
@@ -92,7 +93,9 @@
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     if(demoRunning&&!demoJumped&&!player.grounded&&coyoteTimer>0&&coyoteTimer<=5){
-      demoJumped=true;jump();
+      demoJumped=true;
+      for(let i=0;i<9;i++)particles.push({x:player.x+3+Math.random()*8,y:FLOOR-2,vx:(Math.random()-.5)*2.4,vy:-1.1-Math.random()*1.8,life:12+Math.floor(Math.random()*5),splash:true});
+      jump();
     }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
@@ -114,7 +117,7 @@
       const type=r<0.2?3:r<0.47?2:r<0.78?1:0;
       obstacles.push({x,type,width:type===3?42+Math.random()*12:0});
     }
-    particles.forEach(p=>{p.x+=p.vx;p.life--;});particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy||0;if(p.splash)p.vy+=0.16;p.life--;});particles=particles.filter(p=>p.life>0);
     const px=player.x+2,py=player.y+2,pw=player.w-4,ph=player.h-4;
     if(mode==="game")for(const o of obstacles){
       if(o.type===3)continue;
@@ -160,7 +163,7 @@
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
   function draw(){
-    background();drawPlatforms();particles.forEach(p=>rect(p.x,p.y,2,2,"#7ce0c3"));drawCat();
+    background();drawPlatforms();particles.forEach(p=>rect(p.x,p.y,2,p.splash?3:2,p.splash?"#b8fff0":"#7ce0c3"));drawCat();
     if(state==="playing"&&!dashReady&&mode==="game"){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/15),3,"#7ce0c3");}
   }
   function loop(t){
@@ -181,6 +184,7 @@
   window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
   demoBtn.addEventListener("click",showCoyoteDemo);
   demoBackBtn.addEventListener("click",hideCoyoteDemo);
+  demoExitBtn.addEventListener("click",()=>{demoRunning=false;demoExitBtn.classList.add("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";overlay.classList.remove("is-hidden");state="ready";});
   playBtn.addEventListener("click",()=>chooseMode("game"));
   trainingBtn.addEventListener("click",()=>chooseMode("training"));
   reset("game");requestAnimationFrame(loop);
