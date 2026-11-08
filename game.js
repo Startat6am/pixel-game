@@ -103,7 +103,7 @@
     dashTimer=15;dashCharges--;dashReady=dashCharges>0;
     if(combo>0){
       const angleFactor=Math.min(1,jumpPower/4.7);
-      const boost=(0.15+0.25*angleFactor)*combo;
+      const boost=(0.15+0.25*angleFactor)*combo*(2/3);
       player.vy=Math.min(player.vy-boost,-1.2);
     }else{
       player.vy=Math.min(player.vy,-0.55);
