@@ -32,11 +32,17 @@
           <section class="character-screen is-hidden" id="character-screen" aria-label="Выбор персонажа">
             <p class="overlay-kicker">ТВОЯ КОМАНДА</p>
             <h2>ВЫБЕРИ КОТА</h2>
-            <p class="character-subtitle">У каждого свой характер</p>
+            
             <div class="character-choices" id="character-choices">
-              <button type="button" data-character="classic" class="character-option is-selected"><span class="character-swatch classic-swatch"></span><span class="character-name">КЛАССИК</span><small>Золотой и смелый</small></button>
-              <button type="button" data-character="mint" class="character-option"><span class="character-swatch mint-swatch"></span><span class="character-name">МЯТА</span><small>Лёгкая и быстрая</small></button>
-              <button type="button" data-character="violet" class="character-option"><span class="character-swatch violet-swatch"></span><span class="character-name">СУМРАК</span><small>Тихий и загадочный</small></button>
+              <button type="button" data-character="classic" class="character-option is-selected" aria-label="Выбрать Классика">
+                <svg class="character-preview preview-classic" viewBox="0 0 64 56" aria-hidden="true"><path fill="#f3c66a" d="M8 20 8 4 22 14 42 14 56 4 56 20 60 26 60 43 52 51 12 51 4 43 4 26Z"/><path fill="#ffe0a0" d="M18 36h28v11H18z"/><path fill="#26334c" d="M19 27h6v6h-6zm20 0h6v6h-6z"/><path fill="#d97872" d="M29 38h6v4h-6z"/></svg>
+                <span class="character-name">КЛАССИК</span></button>
+              <button type="button" data-character="mint" class="character-option" aria-label="Выбрать Мяту">
+                <svg class="character-preview preview-mint" viewBox="0 0 64 56" aria-hidden="true"><path fill="#7ce0c3" d="M9 20 5 8 23 15 41 15 59 8 55 22 59 29 55 45 47 51 17 51 9 44 5 29Z"/><path fill="#c4ffeb" d="M18 36h28v11H18z"/><path fill="#203d4b" d="M19 27h6v6h-6zm20 0h6v6h-6z"/><path fill="#ef8eaa" d="M29 38h6v4h-6z"/><path fill="#e5fff6" d="M27 11h10v4H27z"/></svg>
+                <span class="character-name">МЯТА</span></button>
+              <button type="button" data-character="violet" class="character-option" aria-label="Выбрать Сумрака">
+                <svg class="character-preview preview-violet" viewBox="0 0 64 56" aria-hidden="true"><path fill="#101116" d="M5 24 5 2 22 15 42 15 59 2 59 24 62 27 62 48 56 54 8 54 2 48 2 27Z"/><path fill="#292c35" d="M17 39h30v10H17z"/><path fill="#fff" d="M17 28h8v7h-8zm22 0h8v7h-8z"/><path fill="#aeb3c0" d="M29 40h6v3h-6z"/></svg>
+                <span class="character-name">СУМРАК</span></button>
             </div>
             <p class="upgrade-note">ЭФФЕКТЫ И УЛУЧШЕНИЯ БУДУТ ОТКРЫВАТЬСЯ ЗА ПРОХОЖДЕНИЕ</p>
             <button class="back-button" id="back-menu" type="button">← НАЗАД</button>
