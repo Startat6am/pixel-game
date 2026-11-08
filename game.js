@@ -43,14 +43,14 @@
   function update() {
     frame++;
     if(state!=="playing")return;
-    distance+=speed; speed=Math.min(2.45,1.65+distance/9000);
+    const moveSpeed=speed+(dashTimer>0?2.2:0);\n    distance+=moveSpeed; speed=Math.min(2.45,1.65+distance/9000);
     if(dashTimer>0){dashTimer--;player.vy+=0.025;} else player.vy+=0.19;
     player.y+=player.vy;
     const overGap=obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;}
     else player.grounded=false;
     if(player.grounded)player.rot=0;else player.rot+=0.09;
-    for(const o of obstacles)o.x-=speed;
+    for(const o of obstacles)o.x-=moveSpeed;
     obstacles=obstacles.filter(o=>o.x>-40);
     const far=obstacles[obstacles.length-1]?.x||0;
     if(far< W+420) {
