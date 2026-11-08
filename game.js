@@ -10,7 +10,7 @@
   const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3,coyoteTimer=0;
+  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3,coyoteTimer=0,demoRunning=false,demoJumped=false,demoAge=0;
   const COYOTE_FRAMES=7;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
@@ -19,7 +19,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
+    mode=nextMode;demoRunning=false;demoJumped=false;demoAge=0;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.3;coyoteTimer=0;
@@ -32,12 +32,22 @@
   }
   function chooseMode(nextMode){demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");reset(nextMode);start();}
   function showCoyoteDemo(){
-    state="ready";modeChoices.classList.add("is-hidden");demoContent.classList.remove("is-hidden");
-    title.textContent="COYOTE JUMP";hint.textContent="ПРЫЖОК ПОСЛЕ КРАЯ ПЛАТФОРМЫ";
+    demoContent.classList.add("is-hidden");modeChoices.classList.add("is-hidden");
+    reset("game");demoRunning=true;demoJumped=false;demoAge=0;
+    state="playing";overlay.classList.add("is-hidden");
+    title.textContent="COYOTE JUMP";hint.textContent="КОТИК ПЕРЕПРЫГИВАЕТ ПЕРВУЮ ЯМУ";
+  }
+  function finishCoyoteDemo(){
+    if(!demoRunning)return;
+    demoRunning=false;state="demofinished";
+    title.textContent="COYOTE JUMP";hint.textContent="ГОТОВО! КОТИК ПРЫГНУЛ ПОСЛЕ КРАЯ ПЛАТФОРМЫ";
+    demoContent.classList.remove("is-hidden");modeChoices.classList.add("is-hidden");
     overlay.classList.remove("is-hidden");
+    const lead=demoContent.querySelector(".demo-lead");
+    if(lead)lead.textContent="ПРЫЖОК ПОСЛЕ КРАЯ — COYOTE TIME";
   }
   function hideCoyoteDemo(){
-    demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
+    demoRunning=false;demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
   }
   function jump(){
@@ -81,6 +91,9 @@
   function update(){
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
+    if(demoRunning&&!demoJumped&&!player.grounded&&coyoteTimer>0&&coyoteTimer<=5){
+      demoJumped=true;jump();releaseJump();
+    }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
@@ -90,7 +103,7 @@
     const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){
       player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
-      if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
+      if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}if(demoRunning&&demoJumped){demoAge++;if(demoAge>2)finishCoyoteDemo();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
     if(mode==="game")for(const o of obstacles)o.x-=moveSpeed;
@@ -112,6 +125,7 @@
     scoreEl.textContent=String(Math.floor(distance/10));
   }
   function gameOver(){
+    if(demoRunning){finishCoyoteDemo();return;}
     state="gameover";title.textContent="CRASH!";hint.textContent="СЧЁТ: "+Math.floor(distance/10)+" · ВЫБЕРИ РЕЖИМ ДЛЯ НОВОГО ЗАБЕГА";
     overlay.classList.remove("is-hidden");
   }
