@@ -117,3 +117,6 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pi
 .upgrade-note{max-width:290px}
 .back-button{width:140px;min-height:34px;border-radius:9px;background:linear-gradient(135deg,#2d415c,#1c2b43);box-shadow:0 2px 0 #0a1020;border-color:#71869a}
 @media(max-width:420px){.character-choices{gap:5px}.character-option{min-height:86px}.character-preview{width:54px;height:48px}.mode-choices,.character-toggle{width:min(100%,230px)}}
+
+/* Booster availability and cooldown indicator */
+.booster-hud{position:absolute;z-index:3;top:8px;right:8px;width:clamp(92px,24%,150px);padding:5px 6px;border:1px solid #62728a;border-radius:4px;background:#101a2de8;color:#b8c7d9;font:700 clamp(7px,1.8vw,10px) "Courier New",monospace;letter-spacing:.04em;text-align:center;pointer-events:none}.booster-label{white-space:nowrap}.booster-track{height:4px;margin-top:4px;background:#34425f;overflow:hidden;border-radius:3px}.booster-fill{height:100%;width:0;background:#8493a8;transition:width .12s linear,background .12s}.booster-hud.is-unlocked{border-color:#7ce0c3;color:#eafff8}.booster-hud.is-unlocked .booster-fill{background:#7ce0c3}.booster-hud.is-cooling{border-color:#e6b76a;color:#ffe5b3}.booster-hud.is-cooling .booster-fill{background:#e6b76a}
