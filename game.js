@@ -1,9 +1,6 @@
 (() => {
   "use strict";
-
-  // Игровой мир рисуется в низком разрешении и увеличивается через CSS.
-  const WIDTH = 320;
-  const HEIGHT = 180;
+  const WIDTH = 320, HEIGHT = 180;
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const scoreElement = document.getElementById("score");
@@ -12,22 +9,12 @@
   const overlayHint = document.getElementById("overlay-hint");
 
   const CONFIG = {
-    gravity: 0.14,
-    flapPower: -2.8,
-    scrollSpeed: 1.45,
-    pipeWidth: 22,
-    gapHeight: 62,
-    spawnDistance: 145,
-    groundHeight: 9
+    gravity: 0.14, flapPower: -2.8, scrollSpeed: 1.45,
+    pipeWidth: 22, gapHeight: 62, spawnDistance: 145, groundHeight: 9
   };
 
-  let player;
-  let pipes;
-  let score;
-  let frame;
-  let state; // ready, playing, gameover
-  let lastTime = 0;
-  let accumulator = 0;
+  let player, pipes, score, frame, state;
+  let lastTime = 0, accumulator = 0;
   const STEP = 1000 / 60;
 
   function reset() {
@@ -45,7 +32,8 @@
 
   function spawnPipe(x) {
     const margin = 24;
-    const gapY = margin + Math.random() * (HEIGHT - CONFIG.groundHeight - CONFIG.gapHeight - margin * 2);
+    const maxGapY = HEIGHT - CONFIG.groundHeight - CONFIG.gapHeight - margin;
+    const gapY = margin + Math.random() * (maxGapY - margin);
     pipes.push({ x, gapY, passed: false });
   }
 
@@ -64,8 +52,6 @@
   function update() {
     if (state !== "playing") return;
     frame++;
-
-    // Flappy Bird-подобная физика: импульс вверх и постоянная гравитация.
     player.vy += CONFIG.gravity;
     player.y += player.vy;
 
@@ -80,36 +66,25 @@
 
     pipes = pipes.filter(pipe => pipe.x + CONFIG.pipeWidth + 5 > 0);
     const lastPipe = pipes[pipes.length - 1];
-    if (!lastPipe || lastPipe.x < WIDTH - CONFIG.spawnDistance) {
-      spawnPipe(WIDTH + 8);
-    }
-
+    if (!lastPipe || lastPipe.x < WIDTH - CONFIG.spawnDistance) spawnPipe(WIDTH + 8);
     checkCollisions();
   }
 
   function checkCollisions() {
-    // Хитбокс кошки чуть меньше её пиксельного силуэта.
     const hitbox = {
-      x: player.x + 2,
-      y: player.y + 2,
-      width: player.width - 4,
-      height: player.height - 4
+      x: player.x + 2, y: player.y + 2,
+      width: player.width - 4, height: player.height - 4
     };
-
     if (hitbox.y < 0 || hitbox.y + hitbox.height > HEIGHT - CONFIG.groundHeight) {
       gameOver();
       return;
     }
-
     for (const pipe of pipes) {
-      const overlapsX =
-        hitbox.x < pipe.x + CONFIG.pipeWidth &&
+      const overlapsX = hitbox.x < pipe.x + CONFIG.pipeWidth &&
         hitbox.x + hitbox.width > pipe.x;
       if (!overlapsX) continue;
-
-      const gapTop = pipe.gapY;
-      const gapBottom = gapTop + CONFIG.gapHeight;
-      if (hitbox.y < gapTop || hitbox.y + hitbox.height > gapBottom) {
+      const gapBottom = pipe.gapY + CONFIG.gapHeight;
+      if (hitbox.y < pipe.gapY || hitbox.y + hitbox.height > gapBottom) {
         gameOver();
         return;
       }
@@ -123,18 +98,22 @@
     overlay.classList.remove("is-hidden");
   }
 
+  function drawCloud(x, y) {
+    x = Math.round(x);
+    ctx.fillRect(x, y + 4, 22, 6);
+    ctx.fillRect(x + 5, y, 11, 5);
+    ctx.fillRect(x + 15, y + 2, 8, 6);
+  }
+
   function drawBackground() {
     ctx.fillStyle = "#78c9e8";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    // Простые облака из квадратов сохраняют пиксельный стиль.
     ctx.fillStyle = "#bceafa";
     const cloudOffset = (frame * 0.25) % (WIDTH + 55);
     drawCloud(WIDTH - cloudOffset, 28);
     drawCloud((WIDTH + 105 - cloudOffset + WIDTH + 55) % (WIDTH + 55) - 30, 62);
     drawCloud((WIDTH + 230 - cloudOffset + WIDTH + 55) % (WIDTH + 55) - 30, 112);
 
-    // Дальний силуэт города добавляет глубину, не отвлекая от полёта.
     ctx.fillStyle = "#69b6d0";
     for (let i = 0; i < 9; i++) {
       const x = (i * 43 - frame * 0.45 + WIDTH * 2) % WIDTH;
@@ -143,18 +122,11 @@
     }
   }
 
-  function drawCloud(x, y) {
-    ctx.fillRect(Math.round(x), y + 4, 22, 6);
-    ctx.fillRect(Math.round(x) + 5, y, 11, 5);
-    ctx.fillRect(Math.round(x) + 15, y + 2, 8, 6);
-  }
-
   function drawPipe(x, y, width, height, isTop) {
     if (height <= 0) return;
     const capHeight = 6;
     const bodyY = isTop ? y : y + capHeight;
     const bodyHeight = Math.max(0, height - capHeight);
-
     ctx.fillStyle = "#398c48";
     ctx.fillRect(x + 3, bodyY, width - 6, bodyHeight);
     ctx.fillStyle = "#55bd5d";
@@ -162,7 +134,6 @@
     ctx.fillStyle = "#28713c";
     ctx.fillRect(x + width - 7, bodyY, 4, bodyHeight);
 
-    // Широкая кромка трубы обращена в сторону игрового прохода.
     const capY = isTop ? y + height - capHeight : y;
     ctx.fillStyle = "#398c48";
     ctx.fillRect(x, capY, width, capHeight);
@@ -183,17 +154,14 @@
   }
 
   function drawCat() {
-    const x = Math.round(player.x);
-    const y = Math.round(player.y);
-
-    // Абстрактная кошка: силуэт собран из прямоугольников, без готового спрайта.
+    const x = Math.round(player.x), y = Math.round(player.y);
+    // Абстрактная кошка из пиксельных прямоугольников — временный процедурный спрайт.
     ctx.fillStyle = "#26334c";
-    ctx.fillRect(x + 2, y + 1, 3, 4);   // левое ухо
-    ctx.fillRect(x + 10, y + 1, 3, 4);  // правое ухо
-    ctx.fillRect(x + 1, y + 4, 13, 7);  // голова и туловище
-    ctx.fillRect(x + 4, y + 9, 8, 3);   // лапы
-    ctx.fillRect(x - 2, y + 7, 4, 2);   // хвост
-
+    ctx.fillRect(x + 2, y + 1, 3, 4);
+    ctx.fillRect(x + 10, y + 1, 3, 4);
+    ctx.fillRect(x + 1, y + 4, 13, 7);
+    ctx.fillRect(x + 4, y + 9, 8, 3);
+    ctx.fillRect(x - 2, y + 7, 4, 2);
     ctx.fillStyle = "#f2b7a5";
     ctx.fillRect(x + 3, y + 2, 1, 2);
     ctx.fillRect(x + 11, y + 2, 1, 2);
@@ -215,9 +183,7 @@
     ctx.fillRect(0, groundY, WIDTH, 2);
     ctx.fillStyle = "#f0d88d";
     const offset = (frame * CONFIG.scrollSpeed) % 12;
-    for (let x = -offset; x < WIDTH; x += 12) {
-      ctx.fillRect(x, groundY + 4, 6, 2);
-    }
+    for (let x = -offset; x < WIDTH; x += 12) ctx.fillRect(x, groundY + 4, 6, 2);
   }
 
   function draw() {
@@ -231,7 +197,6 @@
     if (!lastTime) lastTime = timestamp;
     accumulator += Math.min(timestamp - lastTime, 100);
     lastTime = timestamp;
-
     while (accumulator >= STEP) {
       update();
       accumulator -= STEP;
@@ -242,7 +207,7 @@
 
   function handleInput(event) {
     if (event.type === "keydown") {
-      if (event.code !== "Space" && event.code !== "ArrowUp" && event.code !== "KeyW") return;
+      if (!["Space", "ArrowUp", "KeyW"].includes(event.code)) return;
       event.preventDefault();
       if (event.repeat) return;
     }
@@ -252,7 +217,6 @@
   canvas.addEventListener("pointerdown", handleInput);
   overlay.addEventListener("pointerdown", handleInput);
   window.addEventListener("keydown", handleInput);
-
   reset();
   requestAnimationFrame(loop);
 })();
