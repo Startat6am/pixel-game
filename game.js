@@ -38,7 +38,7 @@
   }
   function releaseJump(){
     jumpHeld=false;
-    if(player&&!player.grounded&&player.vy<0&&!player.jumpCut){player.vy=Math.max(player.vy,-1.8);player.jumpCut=true;}
+    if(player&&!player.grounded&&player.vy<0&&!player.jumpCut){player.vy=Math.max(player.vy,-2.72);player.jumpCut=true;}
   }
   function updateMetrics(){
     if(mode!=="training"){metricsEl.classList.add("is-hidden");return;}
