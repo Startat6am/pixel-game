@@ -16,22 +16,11 @@
     <section class="game-area" aria-label="Игровое поле">
       <div class="canvas-frame">
         <canvas id="game" width="320" height="180" aria-label="Игровое поле"></canvas>
-        <button id="demo-exit-btn" class="demo-exit is-hidden" type="button">ВЫЙТИ ИЗ ДЕМО</button>
         <div class="jump-metrics is-hidden" id="jump-metrics">ВЫСОТА — px · ДЛИНА — px</div>
         <div class="overlay" id="overlay">
           <p class="overlay-kicker">AUTO RUNNER</p><h2 id="overlay-title">PIXEL DASH</h2>
           <p id="overlay-hint">ВЫБЕРИ РЕЖИМ ИГРЫ</p>
-          <div class="mode-choices" id="mode-choices"><button id="play-mode" type="button">ИГРА</button><button id="training-mode" type="button">ТРЕНИРОВКА</button><button id="coyote-demo-btn" type="button">ДЕМО COYOTE JUMP</button></div>
-          <div class="demo-content is-hidden" id="demo-content">
-            <div class="demo-diagram" aria-label="Котик перепрыгивает край платформы">
-              <div class="demo-platform"></div><div class="demo-gap"></div><div class="demo-cat">🐈</div>
-              <div class="demo-timer"><span>7 КАДРОВ</span><i></i></div>
-            </div>
-            <p class="demo-lead">СОШЁЛ С КРАЯ? ПРЫГАЙ!</p>
-            <p class="demo-copy">Даже если котик уже покинул платформу, у тебя остаётся ещё <strong>7 кадров</strong> — примерно <strong>117 мс</strong>, чтобы нажать прыжок.</p>
-            <p class="demo-copy">Это и есть <strong>COYOTE TIME</strong>: небольшое окно, которое прощает чуть позднее нажатие.</p>
-            <button class="demo-back" id="demo-back-btn" type="button">НАЗАД К РЕЖИМАМ</button>
-          </div>
+          <div class="mode-choices" id="mode-choices"><button id="play-mode" type="button">ИГРА</button><button id="training-mode" type="button">ТРЕНИРОВКА</button></div>
           <span class="start-cue">PIXEL CAT DASH</span>
         </div>
       </div>
