@@ -154,13 +154,23 @@
     const palettes={
       classic:{body:"#f3c66a",muzzle:"#ffe0a0",eyes:"#26334c",nose:"#d97872",accent:"#fff0bc"},
       mint:{body:"#7ce0c3",muzzle:"#c4ffeb",eyes:"#203d4b",nose:"#ef8eaa",accent:"#e5fff6"},
-      violet:{body:"#b9a4ff",muzzle:"#e3d8ff",eyes:"#302b50",nose:"#ff9fbd",accent:"#f5efff"}
+      violet:{body:"#101116",muzzle:"#292c35",eyes:"#ffffff",nose:"#aeb3c0",accent:"#444956"}
     };
     const fur=palettes[selectedCharacter]||palettes.classic;
-    rect(-6,-5,4,5,fur.body);rect(2,-5,4,5,fur.body);
-    rect(-7,-2,14,10,fur.body);rect(-4,5,9,3,fur.muzzle);
-    rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);rect(-1,3,2,1,fur.nose);
-    rect(-5,-4,2,2,fur.accent);
+    if(selectedCharacter==="violet"){
+      // Сумрак: почти чёрная шерсть, светлые глаза и более резкий силуэт.
+      rect(-7,-7,4,7,fur.body);rect(-5,-5,2,3,"#343844");
+      rect(3,-7,4,7,fur.body);rect(3,-5,2,3,"#343844");
+      rect(-6,-4,12,3,fur.body);rect(-7,-1,14,7,fur.body);
+      rect(-5,6,11,3,fur.body);rect(-4,3,9,3,fur.muzzle);
+      rect(-4,-1,2,2,fur.eyes);rect(3,-1,2,2,fur.eyes);
+      rect(-1,3,2,1,fur.nose);rect(-5,-4,2,1,fur.accent);
+    }else{
+      rect(-6,-5,4,5,fur.body);rect(2,-5,4,5,fur.body);
+      rect(-7,-2,14,10,fur.body);rect(-4,5,9,3,fur.muzzle);
+      rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);rect(-1,3,2,1,fur.nose);
+      rect(-5,-4,2,2,fur.accent);
+    }
     ctx.restore();
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
