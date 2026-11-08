@@ -12,7 +12,7 @@
   const characterButtons=[...document.querySelectorAll("[data-character]")];
   let selectedCharacter="classic";
     const metricsEl=document.getElementById("jump-metrics");
-  let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
+  let player,obstacles,platforms,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
   const COYOTE_FRAMES=7;
   const initial=[
@@ -110,18 +110,40 @@
     if(mode==="training")updateMetrics();
     if(jumpStats){jumpStats.peak=Math.max(jumpStats.peak,jumpStats.startY-player.y);updateMetrics();}
     const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
-    if(player.y+player.h>=FLOOR&&!overGap){
-      player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
+    let landed=false;
+    if(mode==="game"&&player.vy>=0){
+      for(const p of platforms){
+        const overlaps=player.x+player.w>p.x&&player.x<p.x+p.width;
+        if(overlaps&&previousBottom<=p.y&&player.y+player.h>=p.y){
+          player.y=p.y-player.h;player.vy=0;landed=true;break;
+        }
+      }
+    }
+    if(landed|| (player.y+player.h>=FLOOR&&!overGap)){
+      if(!landed)player.y=FLOOR-player.h;
+      player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
       if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
-    if(mode==="game")for(const o of obstacles)o.x-=moveSpeed;
-    if(mode==="game")obstacles=obstacles.filter(o=>o.x+(o.width||24)>-30);
-    const far=obstacles.length?obstacles[obstacles.length-1].x:0;
-    if(mode==="game"&&far<W+400){
-      const x=Math.max(W+90,far+95+Math.random()*40),r=Math.random();
-      const type=r<0.2?3:r<0.47?2:r<0.78?1:0;
-      obstacles.push({x,type,width:type===3?42+Math.random()*12:0});
+    if(mode==="game"){
+      for(const o of obstacles)o.x-=moveSpeed;
+      for(const p of platforms)p.x-=moveSpeed;
+      obstacles=obstacles.filter(o=>o.x+(o.width||24)>-30);
+      platforms=platforms.filter(p=>p.x+p.width>-10);
+      const far=obstacles.length?obstacles[obstacles.length-1].x:0;
+      if(far<W+400){
+        const x=Math.max(W+90,far+95+Math.random()*40),r=Math.random();
+        const type=r<0.2?3:r<0.47?2:r<0.78?1:0;
+        obstacles.push({x,type,width:type===3?42+Math.random()*12:0});
+      }
+      const lastPlatform=platforms.length?platforms[platforms.length-1]:null;
+      const platformEdge=lastPlatform?lastPlatform.x+lastPlatform.width:0;
+      if(platformEdge<W+420){
+        const x=Math.max(W+110,platformEdge+105+Math.random()*85);
+        const heights=[96,108,120,130];
+        const y=heights[Math.floor(Math.random()*heights.length)];
+        platforms.push({x,y,width:48+Math.random()*32,height:6});
+      }
     }
     particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy||0;if(p.dust){p.vx*=0.88;p.vy+=0.07;}p.life--;});particles=particles.filter(p=>p.life>0);
     const px=player.x+2,py=player.y+2,pw=player.w-4,ph=player.h-4;
@@ -146,6 +168,14 @@
   }
   function drawPlatforms(){
     if(mode==="training"){rect(0,FLOOR,W,5,"#4bba91");rect(0,FLOOR+5,W,2,"#263957");return;}
+    // Elevated ledges at different heights; the bright top edge marks a landing surface.
+    for(const p of platforms){
+      const x=Math.round(p.x),y=Math.round(p.y);
+      rect(x,y,p.width,p.height,"#385b68");
+      rect(x,y,p.width,2,"#7ce0c3");
+      rect(x+5,y+p.height,Math.max(0,p.width-10),2,"#203b50");
+      for(let bx=x+8;bx<x+p.width-4;bx+=14)rect(bx,y+3,3,2,"#547b82");
+    }
     const gaps=obstacles.filter(o=>o.type===3).map(o=>[Math.round(o.x),Math.round(o.x+o.width)]);
     let cursor=0;
     for(const [a,b] of gaps){if(a>cursor)rect(cursor,FLOOR,a-cursor,5,"#4bba91");cursor=Math.max(cursor,b);}
