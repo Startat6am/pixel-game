@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#10131f">
   <title>Pixel Cat — Dash</title>
   <link rel="stylesheet" href="style.css">
@@ -10,18 +10,24 @@
 <body>
   <main class="game-shell">
     <header class="game-header">
-      <div><p class="eyebrow">PIXEL-GAME / LEVEL 01</p><h1>Pixel Cat <span>— DASH</span></h1></div>
-      <div class="score-panel" aria-live="polite"><span class="score-label">DISTANCE</span><strong id="score">0</strong></div>
+      <div><p class="eyebrow">PIXEL-GAME · LEVEL 01</p><h1>PIXEL CAT <span>/ DASH</span></h1></div>
+      <div class="score-panel"><span class="score-label">DISTANCE</span><strong id="score">0</strong></div>
     </header>
-    <div class="canvas-frame">
-      <canvas id="game" width="320" height="180" aria-label="Pixel Cat Dash. Тап — прыжок, кнопка Dash — рывок."></canvas>
-      <div class="overlay" id="overlay"><p class="overlay-kicker">AUTO RUNNER</p><h2 id="overlay-title">PIXEL DASH</h2><p id="overlay-hint">Тапни, чтобы начать и прыгать</p></div>
-    </div>
-    <div class="controls" aria-label="Управление">
-      <button class="control-btn dash-control" id="dash-btn" type="button"><span>↗</span><small>DASH</small></button>
-      <button class="control-btn jump-control" id="jump-btn" type="button"><span>↑</span><small>JUMP</small></button>
-    </div>
-    <footer class="game-footer"><span><kbd>SPACE</kbd> прыжок</span><span><kbd>SHIFT</kbd> дэш</span><span>Избегай пропастей и блоков</span></footer>
+    <section class="game-area" aria-label="Игровое поле">
+      <div class="canvas-frame">
+        <canvas id="game" width="320" height="180" aria-label="Тап по полю или JUMP — прыжок"></canvas>
+        <div class="overlay" id="overlay">
+          <p class="overlay-kicker">AUTO RUNNER</p><h2 id="overlay-title">PIXEL DASH</h2>
+          <p id="overlay-hint">НАЖМИ JUMP ИЛИ НА ИГРОВОЕ ПОЛЕ</p>
+          <span class="start-cue">TAP TO START</span>
+        </div>
+      </div>
+    </section>
+    <nav class="controls" aria-label="Игровое управление">
+      <button class="control-btn dash-control" id="dash-btn" type="button" aria-label="Дэш"><span>»</span><b>DASH</b></button>
+      <button class="control-btn jump-control" id="jump-btn" type="button" aria-label="Прыжок"><span>↑</span><b>JUMP</b></button>
+    </nav>
+    <footer class="game-footer"><span>ПРЫГАЙ ЧЕРЕЗ ПРОПАСТИ</span><span>ДЭШ — РЫВОК ВПЕРЁД</span></footer>
   </main>
   <script src="game.js"></script>
 </body>
