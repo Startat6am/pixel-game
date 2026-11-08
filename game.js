@@ -5,6 +5,8 @@
   const scoreEl=document.getElementById("score"),overlay=document.getElementById("overlay");
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
+  const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
+  const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,mode="game",jumpStats=null,lastStats=null;
   const initial=[
@@ -14,7 +16,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;
+    mode=nextMode;dashBtn.hidden=mode==="training";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;
@@ -84,7 +86,7 @@
     scoreEl.textContent=String(Math.floor(distance/10));
   }
   function gameOver(){
-    state="gameover";title.textContent="CRASH!";hint.textContent="СЧЁТ: "+Math.floor(distance/10)+" · НАЖМИ JUMP, ЧТОБЫ ЕЩЁ РАЗ";
+    state="gameover";title.textContent="CRASH!";hint.textContent="СЧЁТ: "+Math.floor(distance/10)+" · ВЫБЕРИ РЕЖИМ ДЛЯ НОВОГО ЗАБЕГА";
     overlay.classList.remove("is-hidden");
   }
   function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.ceil(w),h);}
