@@ -103,3 +103,17 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pi
 .back-button:active{transform:translateY(2px);filter:brightness(1.2)}
 @media(max-width:420px){.mode-choices{gap:6px}.mode-button{padding:8px 5px}.character-choices{gap:5px}.character-option{min-height:72px}}
 @media(max-height:560px) and (orientation:landscape){.overlay{padding:6px}.character-option{min-height:58px;padding:4px}.character-choices{margin:4px auto}.upgrade-note{margin-bottom:4px!important}.start-cue{margin-top:5px}}
+
+/* Compact, illustrated character picker and app-like menu buttons */
+.mode-choices{width:min(100%,250px);flex-direction:column;align-items:center;gap:8px;margin-top:12px}
+.mode-button{width:100%;max-width:250px;min-height:39px;justify-content:flex-start;padding:8px 14px;border-radius:9px}
+.character-toggle{width:min(100%,250px);max-width:250px;min-height:36px;border-radius:9px}
+.character-screen{max-width:370px}
+.character-choices{width:min(100%,350px);gap:8px;margin:12px auto}
+.character-option{min-height:96px;padding:8px 5px;gap:6px;border-radius:10px;justify-content:center}
+.character-preview{display:block;width:64px;height:56px;image-rendering:pixelated;filter:drop-shadow(0 3px 2px #0007)}
+.character-name{font-size:9px;letter-spacing:.08em}
+.character-option.is-selected .character-preview{filter:drop-shadow(0 0 5px #7ce0c388)}
+.upgrade-note{max-width:290px}
+.back-button{width:140px;min-height:34px;border-radius:9px;background:linear-gradient(135deg,#2d415c,#1c2b43);box-shadow:0 2px 0 #0a1020;border-color:#71869a}
+@media(max-width:420px){.character-choices{gap:5px}.character-option{min-height:86px}.character-preview{width:54px;height:48px}.mode-choices,.character-toggle{width:min(100%,230px)}}
