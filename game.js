@@ -10,7 +10,7 @@
   const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content"),demoExitBtn=document.getElementById("demo-exit-btn");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0,demoRunning=false,demoJumped=false,demoAge=0;
+  let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0,demoRunning=false,demoJumped=false,demoAge=0;
   const COYOTE_FRAMES=7;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
@@ -22,7 +22,7 @@
     mode=nextMode;demoRunning=false;demoJumped=false;demoAge=0;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
     overlay.classList.remove("is-hidden");updateMetrics();
@@ -71,7 +71,7 @@
           });
         }
       }
-      coyoteTimer=0;player.vy=-4.7;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.7;
+      coyoteTimer=0;player.vy=-4.7;player.grounded=false;player.jumpCut=false;jumpHoldFrames=0;jumpAge=0;jumpPower=4.7;
       jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;updateMetrics();
     }
   }
@@ -114,7 +114,7 @@
     }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
-    if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.24;
+    if(dashTimer>0){dashTimer--;player.vy+=0.035;}else if(jumpHeld&&!player.jumpCut&&player.vy<0&&jumpHoldFrames<12){player.vy+=0.17;jumpHoldFrames++;}else player.vy+=0.24;
     player.y+=player.vy;
     if(mode==="training")updateMetrics();
     if(jumpStats){jumpStats.peak=Math.max(jumpStats.peak,jumpStats.startY-player.y);updateMetrics();}
