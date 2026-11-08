@@ -58,8 +58,7 @@
     dashTimer=15;dashReady=false;
     if(combo>0){
       const angleFactor=Math.min(1,jumpPower/4.3);
-      const speedFactor=Math.min(1.5,speed/1.65);
-      const boost=(1.2+1.6*angleFactor)*speedFactor*combo;
+      const boost=(0.15+0.25*angleFactor)*combo;
       player.vy=Math.min(player.vy-boost,-1.2);
     }else{
       player.vy=Math.min(player.vy,-0.55);
@@ -71,7 +70,7 @@
     frame++;if(state!=="playing")return;
     if(!player.grounded)jumpAge++;else jumpAge=0;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
-    distance+=moveSpeed;if(mode==="game")speed=Math.min(2.45,1.65+distance/9000);
+    distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
     player.y+=player.vy;
     if(mode==="training")updateMetrics();
