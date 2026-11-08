@@ -1,31 +1,47 @@
-:root{color-scheme:dark;font-family:"Courier New",monospace;background:#10131f;color:#f4f0df}
+:root{color-scheme:dark;font-family:"Courier New",monospace;background:#10131f;color:#f4f0df;--mint:#7ce0c3;--pink:#ff9dbb}
 *{box-sizing:border-box}
-body{min-height:100vh;margin:0;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse at 50% 35%,#263653 0,#151a2a 48%,#0c0f18 100%);touch-action:pan-y}
-.game-shell{width:min(900px,100%)}
-.game-header,.game-footer{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.eyebrow,.score-label,.overlay-kicker{color:#a0b2c9;font-size:11px;letter-spacing:.18em}
-.eyebrow{margin:0 0 7px}
-h1{margin:0 0 18px;font-size:clamp(22px,4vw,32px)}
-h1 span{color:#7ce0c3}
-.score-panel{text-align:right;padding-bottom:14px}
+html,body{width:100%;min-height:100%;margin:0}
+body{min-height:100svh;display:flex;justify-content:center;align-items:center;padding:clamp(10px,3vw,24px);background:radial-gradient(ellipse at 50% 30%,#263653 0,#151a2a 52%,#0c0f18 100%);overscroll-behavior:none}
+.game-shell{width:min(900px,100%);margin:auto}
+.game-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.eyebrow,.score-label,.overlay-kicker{color:#a0b2c9;font-size:10px;letter-spacing:.16em}
+.eyebrow{margin:0 0 6px}
+h1{font-size:clamp(19px,4vw,30px);margin:0;letter-spacing:.06em}
+h1 span{color:var(--mint)}
+.score-panel{text-align:right;min-width:75px}
 .score-label{display:block}
-.score-panel strong{font-size:25px;color:#ffe66d}
-.canvas-frame{position:relative;overflow:hidden;border:3px solid #667b8d;background:#17243d;box-shadow:0 0 0 5px #202944,0 18px 55px #0009}
-canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:manipulation}
-.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;background:#101a2ddd;transition:opacity .18s ease}
+.score-panel strong{font-size:clamp(21px,5vw,28px);color:#ffe66d}
+.canvas-frame{position:relative;overflow:hidden;border:2px solid #71869a;border-radius:5px;background:#17243d;box-shadow:0 0 0 4px #202944,0 14px 45px #0008}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;touch-action:none}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center;background:#101a2deF;touch-action:none;transition:opacity .16s}
 .overlay.is-hidden{opacity:0;pointer-events:none}
-.overlay-kicker{margin:0 0 9px;color:#7ce0c3}
-.overlay h2{margin:0 0 9px;font-size:clamp(18px,4vw,28px)}
-.overlay p:last-child{margin:0;color:#e0edf2;font-size:12px;line-height:1.6}
-.controls{display:flex;justify-content:space-between;gap:14px;margin:17px 0 12px;touch-action:none}
-.control-btn{height:58px;min-width:110px;border:2px solid #71869a;border-radius:7px;color:#f4f0df;background:#25334e;font:700 12px "Courier New",monospace;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 0 #111a2c;touch-action:none;user-select:none;-webkit-user-select:none}
-.control-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #111a2c}
-.control-btn span{font-size:24px;color:#7ce0c3}
-.jump-control{flex:1;background:#29465a;border-color:#7ce0c3}
-.dash-control{width:34%;background:#49374a;border-color:#e879a2}
-.dash-control span{color:#ff9dbb}
-.control-btn small{letter-spacing:.12em}
-.game-footer{color:#a5b2c4;font-size:11px;flex-wrap:wrap}
-kbd{padding:3px 6px;border:1px solid #667b8d;border-radius:3px;color:#f4f0df;background:#252e49}
-@media(min-width:700px){.controls{max-width:380px;margin-left:auto;margin-right:auto}.control-btn{cursor:pointer}}
-@media(max-width:520px){body{padding:14px}.game-footer{font-size:9px;justify-content:center}.control-btn{height:64px}}
+.overlay-kicker{margin:0 0 8px;color:var(--mint)}
+.overlay h2{font-size:clamp(20px,5vw,30px);margin:0 0 9px}
+.overlay p:not(.overlay-kicker){font-size:clamp(10px,2.5vw,13px);line-height:1.5;margin:0;color:#e0edf2}
+.start-cue{margin-top:13px;color:var(--mint);font-size:10px;letter-spacing:.2em;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.controls{display:grid;grid-template-columns:1fr 1.45fr;gap:12px;margin:20px 0 12px;touch-action:none}
+.control-btn{height:clamp(68px,12vh,94px);min-height:64px;border:2px solid;border-radius:12px;color:#f4f0df;display:flex;align-items:center;justify-content:center;gap:12px;font:700 clamp(13px,3vw,17px) "Courier New",monospace;letter-spacing:.08em;box-shadow:0 5px 0 #0a1020;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.control-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0a1020;filter:brightness(1.2)}
+.control-btn span{font-size:clamp(26px,7vw,38px);line-height:1}
+.dash-control{background:#49374a;border-color:var(--pink);color:#ffdce7}
+.dash-control span{color:var(--pink)}
+.jump-control{background:#29465a;border-color:var(--mint);color:#e3fff6}
+.jump-control span{color:var(--mint)}
+.game-footer{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#9cacc1;font-size:clamp(8px,2vw,10px);letter-spacing:.06em}
+@media(max-width:600px){
+ body{align-items:flex-start;padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 12px)}
+ .game-shell{width:100%;max-width:520px;margin:auto}
+ .game-header{margin-bottom:15px}
+ .controls{margin-top:22px;gap:10px}
+ .control-btn{border-radius:14px}
+ .game-footer{justify-content:center;text-align:center;gap:8px 16px}
+}
+@media(max-height:560px) and (orientation:landscape){
+ body{padding:7px 14px}
+ .game-shell{max-width:760px}
+ .game-header{margin-bottom:6px}
+ .controls{margin:9px auto 5px;max-width:390px}
+ .control-btn{height:54px;min-height:54px}
+ .game-footer{display:none}
+}
