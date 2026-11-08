@@ -57,8 +57,18 @@
     if((player.grounded||coyoteTimer>0)&&state==="playing"){
       const coyoteJump=!player.grounded&&coyoteTimer>0;
       if(coyoteJump){
-        for(let i=0;i<12;i++){
-          particles.push({x:player.x+2+Math.random()*10,y:player.y+player.h-1,vx:(Math.random()-.5)*3.2,vy:-1.2-Math.random()*2.1,life:14+Math.floor(Math.random()*7),splash:true});
+        // A compact ground-impact puff: dust kicks sideways from both feet.
+        for(let i=0;i<10;i++){
+          const side=i%2===0?-1:1;
+          particles.push({
+            x:player.x+6+(Math.random()-.5)*5,
+            y:FLOOR-2-Math.random()*2,
+            vx:side*(0.65+Math.random()*1.45),
+            vy:-0.25-Math.random()*0.85,
+            life:8+Math.floor(Math.random()*6),
+            dust:true,
+            size:2+Math.floor(Math.random()*3)
+          });
         }
       }
       coyoteTimer=0;player.vy=-4.3;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.3;
@@ -122,7 +132,7 @@
       const type=r<0.2?3:r<0.47?2:r<0.78?1:0;
       obstacles.push({x,type,width:type===3?42+Math.random()*12:0});
     }
-    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy||0;if(p.splash)p.vy+=0.16;p.life--;});particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy||0;if(p.dust){p.vx*=0.88;p.vy+=0.07;}p.life--;});particles=particles.filter(p=>p.life>0);
     const px=player.x+2,py=player.y+2,pw=player.w-4,ph=player.h-4;
     if(mode==="game")for(const o of obstacles){
       if(o.type===3)continue;
@@ -168,7 +178,17 @@
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
   function draw(){
-    background();drawPlatforms();particles.forEach(p=>rect(p.x,p.y,2,p.splash?3:2,p.splash?"#b8fff0":"#7ce0c3"));drawCat();
+    background();drawPlatforms();
+    particles.forEach(p=>{
+      if(p.dust){
+        const alpha=Math.max(0.18,p.life/14);
+        ctx.globalAlpha=alpha;
+        rect(p.x,p.y,p.size,2,"#c5d2c8");
+        if(p.size>3)rect(p.x+1,p.y+2,2,1,"#829d91");
+        ctx.globalAlpha=1;
+      }else rect(p.x,p.y,2,2,"#7ce0c3");
+    });
+    drawCat();
     if(state==="playing"&&!dashReady&&mode==="game"){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/15),3,"#7ce0c3");}
   }
   function loop(t){
