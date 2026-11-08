@@ -55,6 +55,12 @@
     if(state==="gameover"){reset(mode);start();}
     start();
     if((player.grounded||coyoteTimer>0)&&state==="playing"){
+      const coyoteJump=!player.grounded&&coyoteTimer>0;
+      if(coyoteJump){
+        for(let i=0;i<12;i++){
+          particles.push({x:player.x+2+Math.random()*10,y:player.y+player.h-1,vx:(Math.random()-.5)*3.2,vy:-1.2-Math.random()*2.1,life:14+Math.floor(Math.random()*7),splash:true});
+        }
+      }
       coyoteTimer=0;player.vy=-4.3;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.3;
       jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;updateMetrics();
     }
@@ -94,7 +100,6 @@
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     if(demoRunning&&!demoJumped&&!player.grounded&&coyoteTimer>0&&coyoteTimer<=5){
       demoJumped=true;
-      for(let i=0;i<9;i++)particles.push({x:player.x+3+Math.random()*8,y:FLOOR-2,vx:(Math.random()-.5)*2.4,vy:-1.1-Math.random()*1.8,life:12+Math.floor(Math.random()*5),splash:true});
       jump();
     }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
