@@ -20,7 +20,13 @@
         <div class="overlay" id="overlay">
           <p class="overlay-kicker">AUTO RUNNER</p><h2 id="overlay-title">PIXEL DASH</h2>
           <p id="overlay-hint">ВЫБЕРИ РЕЖИМ ИГРЫ</p>
-          <div class="mode-choices" id="mode-choices"><button id="play-mode" type="button">ИГРА</button><button id="training-mode" type="button">ТРЕНИРОВКА</button></div>
+          <div class="mode-choices" id="mode-choices"><button class="mode-button game-mode" id="play-mode" type="button"><span class="mode-icon">▶</span><span><strong>НАЧАТЬ</strong><small>Обычный забег</small></span></button><button class="mode-button training-mode" id="training-mode" type="button"><span class="mode-icon">✦</span><span><strong>ТРЕНИРОВКА</strong><small>Практика прыжков</small></span></button></div>
+          <button class="character-toggle" id="character-toggle" type="button"><span>♟</span> ВЫБРАТЬ ПЕРСОНАЖА <span class="toggle-arrow">⌄</span></button>
+          <div class="character-choices is-hidden" id="character-choices" aria-label="Выбор персонажа">
+            <button type="button" data-character="classic" class="character-option is-selected"><span class="character-swatch classic-swatch"></span><span>КЛАССИК</span></button>
+            <button type="button" data-character="mint" class="character-option"><span class="character-swatch mint-swatch"></span><span>МЯТА</span></button>
+            <button type="button" data-character="violet" class="character-option"><span class="character-swatch violet-swatch"></span><span>СУМРАК</span></button>
+          </div>
           <span class="start-cue">PIXEL CAT DASH</span>
         </div>
       </div>
