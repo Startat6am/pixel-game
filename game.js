@@ -6,6 +6,7 @@
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
+  let jumpHeld=false,jumpHoldFrames=0;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
@@ -15,7 +16,7 @@
   function reset(){
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=initial.map(([x,type])=>({x,type,width:type===3?48:0}));
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="НАЖМИ JUMP ИЛИ НА ИГРОВОЕ ПОЛЕ";
     overlay.classList.remove("is-hidden");
@@ -26,19 +27,20 @@
   function jump(){
     if(state==="gameover"){reset();}
     start();
-    if(player.grounded){player.vy=-4.3;player.grounded=false;}
+    if(player.grounded){player.vy=-2.72;player.grounded=false;jumpHoldFrames=0;}
   }
   function dash(){
     if(state==="gameover")reset();
     start();
     if(state!=="playing"||!dashReady)return;
-    dashTimer=15;dashReady=false;player.vy=Math.min(player.vy,-0.55);
+    dashTimer=15;dashReady=false;jumpHeld=false;player.vy=Math.min(player.vy,-0.55);
     for(let i=0;i<8;i++)particles.push({x:player.x,y:player.y+8,vx:-1-Math.random()*2,life:14});
   }
   function update(){
     frame++;if(state!=="playing")return;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;speed=Math.min(2.45,1.65+distance/9000);
+    if(jumpHeld&&!player.grounded&&player.vy<0&&jumpHoldFrames<9){player.vy-=0.18;jumpHoldFrames++;}
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
     player.y+=player.vy;
     const overGap=obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
@@ -106,13 +108,17 @@
     while(acc>=STEP){update();acc-=STEP;}
     draw();requestAnimationFrame(loop);
   }
-  canvas.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")e.preventDefault();jump();});
-  overlay.addEventListener("pointerdown",e=>{e.preventDefault();jump();});
-  jumpBtn.addEventListener("pointerdown",e=>{e.preventDefault();jump();});
+  canvas.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")e.preventDefault();jumpHeld=true;jump();});
+  overlay.addEventListener("pointerdown",e=>{e.preventDefault();jumpHeld=true;jump();});
+  jumpBtn.addEventListener("pointerdown",e=>{e.preventDefault();jumpHeld=true;jump();});
+  window.addEventListener("pointerup",()=>{jumpHeld=false;});
+  window.addEventListener("pointercancel",()=>{jumpHeld=false;});
+  window.addEventListener("blur",()=>{jumpHeld=false;});
   dashBtn.addEventListener("pointerdown",e=>{e.preventDefault();dash();});
   window.addEventListener("keydown",e=>{
-    if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat)jump();}
+    if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat){jumpHeld=true;jump();}}
     if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
   });
+  window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))jumpHeld=false;});
   reset();requestAnimationFrame(loop);
 })();
