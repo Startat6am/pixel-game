@@ -56,3 +56,5 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pi
 
 .controls:has(.dash-control[hidden]){grid-template-columns:1fr}
 .control-btn[hidden]{display:none}
+
+.jump-metrics{white-space:pre-line;line-height:1.65}
