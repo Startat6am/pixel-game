@@ -152,7 +152,7 @@
     if(landed|| (player.y+player.h>=FLOOR&&!overGap)){
       if(!landed)player.y=FLOOR-player.h;
       player.vy=0;player.grounded=true;dashCharges=selectedCharacter==="classic"&&specialUnlocked&&specialCooldown<=0?2:1;dashReady=true;
-      if(selectedCharacter==="violet"&&specialUnlocked)player.extraJumpAvailable=true;
+      if(selectedCharacter==="violet"&&specialUnlocked&&specialCooldown<=0)player.extraJumpAvailable=true;
       coyoteTimer=COYOTE_FRAMES;
       if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
