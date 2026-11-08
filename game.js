@@ -282,6 +282,30 @@
       rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);rect(-1,3,2,1,fur.nose);
       rect(-5,-4,2,2,fur.accent);
     }
+    // Небольшая постоянная аура подчёркивает индивидуальность каждого кота.
+    if(selectedCharacter==="violet"){
+      // Сумрак: холодное свечение глаз с мягким ореолом.
+      ctx.save();ctx.shadowColor="#b9c8ff";ctx.shadowBlur=8;
+      rect(-5,-2,3,3,"#ffffff");rect(3,-2,3,3,"#ffffff");
+      ctx.restore();
+      if(frame%36<18){ctx.globalAlpha=.55;rect(-12,-5,2,2,"#aebcff");rect(10,-8,2,2,"#aebcff");ctx.globalAlpha=1;}
+    }else if(selectedCharacter==="mint"){
+      // Мята: лёгкие мятные пузырьки и искры вокруг головы.
+      const bob=Math.sin(frame*.09)*2;
+      ctx.globalAlpha=.8;
+      rect(-12,Math.round(-7+bob),2,2,"#b8ffe9");
+      rect(10,Math.round(-10-bob),2,2,"#7ce0c3");
+      if(frame%28<14)rect(-10,Math.round(5-bob),2,2,"#e5fff6");
+      ctx.globalAlpha=1;
+    }else{
+      // Классик: тёплые золотые искры.
+      const twinkle=Math.sin(frame*.16);
+      ctx.globalAlpha=.45+Math.abs(twinkle)*.45;
+      rect(-11,Math.round(-8+twinkle*2),2,2,"#ffe58a");
+      rect(10,Math.round(-5-twinkle*2),2,2,"#fff0bc");
+      if(frame%32<12)rect(8,Math.round(7+twinkle),2,2,"#f3c66a");
+      ctx.globalAlpha=1;
+    }
     ctx.restore();
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
