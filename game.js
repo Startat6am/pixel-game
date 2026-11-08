@@ -6,6 +6,8 @@
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
+  const demoBtn=document.getElementById("coyote-demo-btn"),demoBackBtn=document.getElementById("demo-back-btn");
+  const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3,coyoteTimer=0;
@@ -28,7 +30,16 @@
   function start(){
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
   }
-  function chooseMode(nextMode){reset(nextMode);start();}
+  function chooseMode(nextMode){demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");reset(nextMode);start();}
+  function showCoyoteDemo(){
+    state="ready";modeChoices.classList.add("is-hidden");demoContent.classList.remove("is-hidden");
+    title.textContent="COYOTE JUMP";hint.textContent="ПРЫЖОК ПОСЛЕ КРАЯ ПЛАТФОРМЫ";
+    overlay.classList.remove("is-hidden");
+  }
+  function hideCoyoteDemo(){
+    demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
+    title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
+  }
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
@@ -154,6 +165,8 @@
     if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
   });
   window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
+  demoBtn.addEventListener("click",showCoyoteDemo);
+  demoBackBtn.addEventListener("click",hideCoyoteDemo);
   playBtn.addEventListener("click",()=>chooseMode("game"));
   trainingBtn.addEventListener("click",()=>chooseMode("training"));
   reset("game");requestAnimationFrame(loop);
