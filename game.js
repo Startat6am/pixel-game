@@ -16,7 +16,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;dashBtn.hidden=mode==="training";dashBtn.style.display=mode==="training"?"none":"flex";
+    mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;
@@ -38,21 +38,20 @@
   }
   function releaseJump(){
     jumpHeld=false;
-    if(player&&!player.grounded&&player.vy<0&&!player.jumpCut){player.vy=Math.max(player.vy,-2.2);player.jumpCut=true;}
+    if(player&&!player.grounded&&player.vy<0&&!player.jumpCut){player.vy=Math.max(player.vy,-1.75);player.jumpCut=true;}
   }
   function updateMetrics(){
     if(mode!=="training"){metricsEl.classList.add("is-hidden");return;}
     metricsEl.classList.remove("is-hidden");
-    const stats=jumpStats||lastStats;
-    if(!stats){metricsEl.textContent="ВЫСОТА — px   ·   ДЛИНА — px\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";return;}
-    metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";
+    const stats=jumpStats||lastStats,shownSpeed=speed+(dashTimer>0?2.4:0);
+    if(!stats){metricsEl.textContent="ВЫСОТА — px   ·   ДЛИНА — px\nСКОРОСТЬ "+shownSpeed.toFixed(2)+" px/кадр";return;}
+    metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px\nСКОРОСТЬ "+shownSpeed.toFixed(2)+" px/кадр";
   }
   function dash(){
-    if(mode!=="game")return;
     if(state==="gameover")reset(mode);
     start();
     if(state!=="playing"||!dashReady)return;
-    dashTimer=15;dashReady=false;releaseJump();player.vy=Math.min(player.vy,-0.55);
+    dashTimer=15;dashReady=false;releaseJump();player.vy=Math.min(player.vy,-0.55);updateMetrics();
     for(let i=0;i<8;i++)particles.push({x:player.x,y:player.y+8,vx:-1-Math.random()*2,life:14});
   }
   function update(){
@@ -61,6 +60,7 @@
     distance+=moveSpeed;if(mode==="game")speed=Math.min(2.45,1.65+distance/9000);
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
     player.y+=player.vy;
+    if(mode==="training")updateMetrics();
     if(jumpStats){jumpStats.peak=Math.max(jumpStats.peak,jumpStats.startY-player.y);updateMetrics();}
     const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){
