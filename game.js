@@ -8,7 +8,8 @@
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
   const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3;
+  let jumpHeld=false,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.3,coyoteTimer=0;
+  const COYOTE_FRAMES=7;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
@@ -19,7 +20,7 @@
     mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.3;
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.3;coyoteTimer=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
     overlay.classList.remove("is-hidden");updateMetrics();
@@ -31,8 +32,8 @@
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
-    if(player.grounded&&state==="playing"){
-      player.vy=-4.3;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.3;
+    if((player.grounded||coyoteTimer>0)&&state==="playing"){
+      coyoteTimer=0;player.vy=-4.3;player.grounded=false;player.jumpCut=false;jumpAge=0;jumpPower=4.3;
       jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;updateMetrics();
     }
   }
@@ -68,7 +69,7 @@
   }
   function update(){
     frame++;if(state!=="playing")return;
-    if(!player.grounded)jumpAge++;else jumpAge=0;
+    if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else player.vy+=0.2;
@@ -77,7 +78,7 @@
     if(jumpStats){jumpStats.peak=Math.max(jumpStats.peak,jumpStats.startY-player.y);updateMetrics();}
     const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){
-      player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;
+      player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
       if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
