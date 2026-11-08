@@ -6,11 +6,9 @@
   const title=document.getElementById("overlay-title"),hint=document.getElementById("overlay-hint");
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
-  const demoBtn=document.getElementById("coyote-demo-btn"),demoBackBtn=document.getElementById("demo-back-btn");
-  const modeChoices=document.getElementById("mode-choices"),demoContent=document.getElementById("demo-content"),demoExitBtn=document.getElementById("demo-exit-btn");
-  const metricsEl=document.getElementById("jump-metrics");
+    const metricsEl=document.getElementById("jump-metrics");
   let player,obstacles,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
-  let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0,demoRunning=false,demoJumped=false,demoAge=0;
+  let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
   const COYOTE_FRAMES=7;
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
@@ -19,7 +17,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;demoRunning=false;demoJumped=false;demoAge=0;dashBtn.hidden=false;dashBtn.style.display="flex";
+    mode=nextMode;dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
@@ -30,27 +28,7 @@
   function start(){
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
   }
-  function chooseMode(nextMode){demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");reset(nextMode);start();}
-  function showCoyoteDemo(){
-    demoExitBtn.classList.remove("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.add("is-hidden");
-    reset("game");demoRunning=true;demoJumped=false;demoAge=0;
-    state="playing";overlay.classList.add("is-hidden");
-    title.textContent="COYOTE JUMP";hint.textContent="КОТИК ПЕРЕПРЫГИВАЕТ ПЕРВУЮ ЯМУ";
-  }
-  function finishCoyoteDemo(){
-    if(!demoRunning)return;
-    demoExitBtn.classList.add("is-hidden");
-    demoRunning=false;state="demofinished";
-    title.textContent="COYOTE JUMP";hint.textContent="ГОТОВО! КОТИК ПРЫГНУЛ ПОСЛЕ КРАЯ ПЛАТФОРМЫ";
-    demoContent.classList.remove("is-hidden");modeChoices.classList.add("is-hidden");
-    overlay.classList.remove("is-hidden");
-    const lead=demoContent.querySelector(".demo-lead");
-    if(lead)lead.textContent="ПРЫЖОК ПОСЛЕ КРАЯ — COYOTE TIME";
-  }
-  function hideCoyoteDemo(){
-    demoRunning=false;demoExitBtn.classList.add("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");
-    title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
-  }
+  function chooseMode(nextMode){reset(nextMode);start();}
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
@@ -108,10 +86,6 @@
   function update(){
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
-    if(demoRunning&&!demoJumped&&!player.grounded&&coyoteTimer>0&&coyoteTimer<=5){
-      demoJumped=true;
-      jump();
-    }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else if(jumpHeld&&!player.jumpCut&&player.vy<0&&jumpHoldFrames<12){player.vy+=0.17;jumpHoldFrames++;}else player.vy+=0.24;
@@ -121,7 +95,7 @@
     const overGap=mode==="game"&&obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
     if(player.y+player.h>=FLOOR&&!overGap){
       player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
-      if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}if(demoRunning&&demoJumped){demoAge++;if(demoAge>2)finishCoyoteDemo();}
+      if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
     if(mode==="game")for(const o of obstacles)o.x-=moveSpeed;
@@ -143,7 +117,6 @@
     scoreEl.textContent=String(Math.floor(distance/10));
   }
   function gameOver(){
-    if(demoRunning){finishCoyoteDemo();return;}
     state="gameover";title.textContent="CRASH!";hint.textContent="СЧЁТ: "+Math.floor(distance/10)+" · ВЫБЕРИ РЕЖИМ ДЛЯ НОВОГО ЗАБЕГА";
     overlay.classList.remove("is-hidden");
   }
@@ -207,9 +180,6 @@
     if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
   });
   window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
-  demoBtn.addEventListener("click",showCoyoteDemo);
-  demoBackBtn.addEventListener("click",hideCoyoteDemo);
-  demoExitBtn.addEventListener("click",()=>{demoRunning=false;demoExitBtn.classList.add("is-hidden");demoContent.classList.add("is-hidden");modeChoices.classList.remove("is-hidden");title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";overlay.classList.remove("is-hidden");state="ready";});
   playBtn.addEventListener("click",()=>chooseMode("game"));
   trainingBtn.addEventListener("click",()=>chooseMode("training"));
   reset("game");requestAnimationFrame(loop);
