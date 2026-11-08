@@ -15,6 +15,7 @@
   let player,obstacles,platforms,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
   let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
   const COYOTE_FRAMES=7;
+  const initialPlatforms=[[225,119,62],[335,101,58],[455,127,72],[585,108,64],[720,120,68]];
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
@@ -25,6 +26,7 @@
     mode=nextMode;showMenu();dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
+    platforms=mode==="game"?initialPlatforms.map(([x,y,width])=>({x,y,width,height:6})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
@@ -103,6 +105,7 @@
   function update(){
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
+    const previousBottom=player.y+player.h;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else if(jumpHeld&&!player.jumpCut&&player.vy<0&&jumpHoldFrames<12){player.vy+=0.17;jumpHoldFrames++;}else player.vy+=0.24;
