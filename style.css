@@ -58,23 +58,3 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pi
 .control-btn[hidden]{display:none}
 
 .jump-metrics{white-space:pre-line;line-height:1.65}
-
-
-/* Coyote Time mini-presentation */
-.mode-choices #coyote-demo-btn{flex-basis:100%;border-color:#ffe66d;background:#514a31;color:#fff0a6}
-.demo-content{width:min(100%,440px);margin-top:8px}
-.demo-content.is-hidden{display:none}
-.demo-diagram{height:82px;position:relative;margin:4px auto 9px;overflow:hidden}
-.demo-platform{position:absolute;left:2%;right:51%;bottom:19px;height:7px;background:#4bba91;border-top:2px solid #a5f0d7}
-.demo-gap{position:absolute;left:49%;right:2%;bottom:19px;height:7px;border-bottom:2px dashed #e87968}
-.demo-cat{position:absolute;left:42%;bottom:25px;font-size:25px;line-height:1;animation:coyote-hop 2.4s ease-in-out infinite}
-.demo-timer{position:absolute;left:48%;right:8%;top:5px;display:flex;align-items:center;gap:7px;color:#ffe66d;font-size:9px;letter-spacing:.08em}
-.demo-timer i{height:4px;flex:1;background:linear-gradient(90deg,#ffe66d 0 100%,#46516a 100%);transform-origin:left;animation:coyote-timer 2.4s linear infinite}
-@keyframes coyote-hop{0%,25%{left:42%;bottom:25px;transform:translateY(0)}38%{left:49%;bottom:14px;transform:translateY(0)}65%,82%{left:68%;bottom:25px;transform:translateY(-43px)}100%{left:83%;bottom:25px;transform:translateY(0)}}
-@keyframes coyote-timer{0%,25%{transform:scaleX(1)}42%,100%{transform:scaleX(.05)}}
-.demo-lead{color:var(--mint)!important;font-weight:700;letter-spacing:.12em;margin:0 0 6px!important}
-.demo-copy{font-size:clamp(9px,2.2vw,12px)!important;margin:0 0 7px!important;max-width:390px}
-.demo-copy strong{color:#ffe66d}
-.demo-back{margin-top:6px;padding:10px 14px;border:1px solid var(--mint);border-radius:7px;background:#29465a;color:#e3fff6;font:700 11px "Courier New",monospace;letter-spacing:.08em}
-
-.demo-exit{position:absolute;z-index:5;top:8px;right:8px;padding:7px 9px;border:1px solid #ffe66d;border-radius:5px;background:#514a31;color:#fff0a6;font:700 9px "Courier New",monospace;letter-spacing:.06em;cursor:pointer}.demo-exit.is-hidden{display:none}
