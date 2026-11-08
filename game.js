@@ -44,8 +44,8 @@
     if(mode!=="training"){metricsEl.classList.add("is-hidden");return;}
     metricsEl.classList.remove("is-hidden");
     const stats=jumpStats||lastStats;
-    if(!stats){metricsEl.textContent="ВЫСОТА — px   ·   ДЛИНА — px\\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";return;}
-    metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px\\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";
+    if(!stats){metricsEl.textContent="ВЫСОТА — px   ·   ДЛИНА — px\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";return;}
+    metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px\nСКОРОСТЬ "+speed.toFixed(2)+" px/кадр";
   }
   function dash(){
     if(mode!=="game")return;
