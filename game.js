@@ -128,12 +128,11 @@
     while(acc>=STEP){update();acc-=STEP;}
     draw();requestAnimationFrame(loop);
   }
-  canvas.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")e.preventDefault();jumpHeld=true;jump();});
-  overlay.addEventListener("pointerdown",e=>{e.preventDefault();jumpHeld=true;jump();});
+  canvas.addEventListener("pointerdown",e=>{if(state==="playing"){e.preventDefault();jumpHeld=true;jump();}});
   jumpBtn.addEventListener("pointerdown",e=>{e.preventDefault();jumpHeld=true;jump();});
-  window.addEventListener("pointerup",()=>{jumpHeld=false;});
-  window.addEventListener("pointercancel",()=>{jumpHeld=false;});
-  window.addEventListener("blur",()=>{jumpHeld=false;});
+  window.addEventListener("pointerup",releaseJump);
+  window.addEventListener("pointercancel",releaseJump);
+  window.addEventListener("blur",releaseJump);
   dashBtn.addEventListener("pointerdown",e=>{e.preventDefault();dash();});
   window.addEventListener("keydown",e=>{
     if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat){jumpHeld=true;jump();}}
