@@ -1,222 +1,129 @@
 (() => {
   "use strict";
-  const WIDTH = 320, HEIGHT = 180;
+  const W = 320, H = 180, FLOOR = 145;
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
-  const scoreElement = document.getElementById("score");
+  const scoreEl = document.getElementById("score");
   const overlay = document.getElementById("overlay");
-  const overlayTitle = document.getElementById("overlay-title");
-  const overlayHint = document.getElementById("overlay-hint");
-
-  const CONFIG = {
-    gravity: 0.14, flapPower: -2.8, scrollSpeed: 1.45,
-    pipeWidth: 22, gapHeight: 62, spawnDistance: 145, groundHeight: 9
-  };
-
-  let player, pipes, score, frame, state;
-  let lastTime = 0, accumulator = 0;
+  const title = document.getElementById("overlay-title");
+  const hint = document.getElementById("overlay-hint");
+  const jumpBtn = document.getElementById("jump-btn");
+  const dashBtn = document.getElementById("dash-btn");
   const STEP = 1000 / 60;
-
+  let player, obstacles, particles, distance, state, frame, speed, dashTimer, dashReady, last, acc;
+  const course = [
+    [210,0,0],[300,0,0],[390,0,1],[485,0,0],[555,0,0],
+    [650,0,2],[745,0,0],[820,0,0],[910,0,1],[1005,0,0],
+    [1090,0,2],[1190,0,0],[1270,0,0],[1360,0,1],[1460,0,0],
+    [1545,0,2],[1650,0,0],[1740,0,1],[1840,0,0],[1940,0,2],
+    [2050,0,0],[2140,0,1],[2240,0,0],[2340,0,2],[2450,0,0]
+  ];
   function reset() {
-    player = { x: 68, y: 82, vy: 0, width: 16, height: 13 };
-    pipes = [];
-    score = 0;
-    frame = 0;
-    state = "ready";
-    scoreElement.textContent = "0";
-    overlayTitle.textContent = "Полетели?";
-    overlayHint.textContent = "Кликни, тапни или нажми пробел";
+    player = {x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
+    obstacles = course.map(([x,,type])=>({x,type,passed:false}));
+    particles=[]; distance=0; frame=0; speed=1.65; dashTimer=0; dashReady=true;
+    state="ready"; scoreEl.textContent="0";
+    title.textContent="PIXEL DASH"; hint.textContent="Тапни, чтобы начать и прыгать";
     overlay.classList.remove("is-hidden");
-    spawnPipe(WIDTH + 35);
   }
-
-  function spawnPipe(x) {
-    const margin = 24;
-    const maxGapY = HEIGHT - CONFIG.groundHeight - CONFIG.gapHeight - margin;
-    const gapY = margin + Math.random() * (maxGapY - margin);
-    pipes.push({ x, gapY, passed: false });
+  function start() { if(state==="ready"){state="playing";overlay.classList.add("is-hidden");} }
+  function jump() {
+    if(state==="gameover"){reset();start();return;}
+    start();
+    if(state!=="playing")return;
+    if(player.grounded){player.vy=-4.15;player.grounded=false;}
   }
-
-  function flap() {
-    if (state === "gameover") {
-      reset();
-      state = "playing";
-      overlay.classList.add("is-hidden");
-    } else if (state === "ready") {
-      state = "playing";
-      overlay.classList.add("is-hidden");
-    }
-    if (state === "playing") player.vy = CONFIG.flapPower;
+  function dash() {
+    if(state==="gameover"){reset();start();return;}
+    start();
+    if(state!=="playing"||!dashReady)return;
+    dashTimer=13;dashReady=false;player.vy=Math.min(player.vy,-0.35);
+    for(let i=0;i<7;i++)particles.push({x:player.x,y:player.y+8,vx:-Math.random()*2-1,life:12});
   }
-
   function update() {
-    if (state !== "playing") return;
     frame++;
-    player.vy += CONFIG.gravity;
-    player.y += player.vy;
-
-    for (const pipe of pipes) {
-      pipe.x -= CONFIG.scrollSpeed;
-      if (!pipe.passed && pipe.x + CONFIG.pipeWidth < player.x) {
-        pipe.passed = true;
-        score++;
-        scoreElement.textContent = String(score);
-      }
+    if(state!=="playing")return;
+    distance+=speed; speed=Math.min(2.45,1.65+distance/9000);
+    if(dashTimer>0){dashTimer--;player.vy+=0.025;} else player.vy+=0.19;
+    player.y+=player.vy;
+    if(player.y+player.h>=FLOOR){player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;}
+    else player.grounded=false;
+    if(player.grounded)player.rot=0;else player.rot+=0.09;
+    for(const o of obstacles)o.x-=speed;
+    obstacles=obstacles.filter(o=>o.x>-40);
+    const far=obstacles[obstacles.length-1]?.x||0;
+    if(far< W+420) {
+      const x=Math.max(W+80,far+85+Math.random()*45);
+      const type=Math.random()<0.28?2:(Math.random()<0.48?1:0);
+      obstacles.push({x,type,passed:false});
     }
-
-    pipes = pipes.filter(pipe => pipe.x + CONFIG.pipeWidth + 5 > 0);
-    const lastPipe = pipes[pipes.length - 1];
-    if (!lastPipe || lastPipe.x < WIDTH - CONFIG.spawnDistance) spawnPipe(WIDTH + 8);
-    checkCollisions();
+    for(const p of particles){p.x+=p.vx;p.life--;}
+    particles=particles.filter(p=>p.life>0);
+    const px=player.x+2, py=player.y+2, pw=player.w-4, ph=player.h-4;
+    for(const o of obstacles){
+      const ow=o.type===2?23:15, oh=o.type===2?22: o.type===1?27:0;
+      if(!oh)continue;
+      const ox=o.x, oy=FLOOR-oh;
+      if(px<ox+ow&&px+pw>ox&&py<oy+oh&&py+ph>oy){gameOver();break;}
+    }
+    if(player.y>H+20)gameOver();
+    scoreEl.textContent=String(Math.floor(distance/10));
   }
-
-  function checkCollisions() {
-    const hitbox = {
-      x: player.x + 2, y: player.y + 2,
-      width: player.width - 4, height: player.height - 4
-    };
-    if (hitbox.y < 0 || hitbox.y + hitbox.height > HEIGHT - CONFIG.groundHeight) {
-      gameOver();
-      return;
-    }
-    for (const pipe of pipes) {
-      const overlapsX = hitbox.x < pipe.x + CONFIG.pipeWidth &&
-        hitbox.x + hitbox.width > pipe.x;
-      if (!overlapsX) continue;
-      const gapBottom = pipe.gapY + CONFIG.gapHeight;
-      if (hitbox.y < pipe.gapY || hitbox.y + hitbox.height > gapBottom) {
-        gameOver();
-        return;
-      }
-    }
-  }
-
-  function gameOver() {
-    state = "gameover";
-    overlayTitle.textContent = "Игра окончена";
-    overlayHint.textContent = "Счёт: " + score + " — нажми, чтобы попробовать ещё раз";
+  function gameOver(){
+    state="gameover";title.textContent="CRASH!";
+    hint.textContent="Дистанция: "+Math.floor(distance/10)+" — тапни, чтобы снова";
     overlay.classList.remove("is-hidden");
   }
-
-  function drawCloud(x, y) {
-    x = Math.round(x);
-    ctx.fillRect(x, y + 4, 22, 6);
-    ctx.fillRect(x + 5, y, 11, 5);
-    ctx.fillRect(x + 15, y + 2, 8, 6);
-  }
-
-  function drawBackground() {
-    ctx.fillStyle = "#78c9e8";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    ctx.fillStyle = "#bceafa";
-    const cloudOffset = (frame * 0.25) % (WIDTH + 55);
-    drawCloud(WIDTH - cloudOffset, 28);
-    drawCloud((WIDTH + 105 - cloudOffset + WIDTH + 55) % (WIDTH + 55) - 30, 62);
-    drawCloud((WIDTH + 230 - cloudOffset + WIDTH + 55) % (WIDTH + 55) - 30, 112);
-
-    ctx.fillStyle = "#69b6d0";
-    for (let i = 0; i < 9; i++) {
-      const x = (i * 43 - frame * 0.45 + WIDTH * 2) % WIDTH;
-      const h = 12 + (i % 3) * 7;
-      ctx.fillRect(x, HEIGHT - CONFIG.groundHeight - h, 13, h);
+  function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+  function background(){
+    rect(0,0,W,H,"#17243d");
+    for(let i=0;i<24;i++){
+      const x=(i*47-frame*0.22%(W+47)+W+47)%(W+47);
+      rect(x,25+(i%4)*23,2,2,"#52617d");
     }
+    rect(0,FLOOR+3,W,H-FLOOR-3,"#111a2c");
+    rect(0,FLOOR+3,W,2,"#7ce0c3");
+    for(let x=-(frame*speed%16);x<W;x+=16)rect(x,FLOOR+12,8,2,"#293957");
   }
-
-  function drawPipe(x, y, width, height, isTop) {
-    if (height <= 0) return;
-    const capHeight = 6;
-    const bodyY = isTop ? y : y + capHeight;
-    const bodyHeight = Math.max(0, height - capHeight);
-    ctx.fillStyle = "#398c48";
-    ctx.fillRect(x + 3, bodyY, width - 6, bodyHeight);
-    ctx.fillStyle = "#55bd5d";
-    ctx.fillRect(x + 5, bodyY, 4, bodyHeight);
-    ctx.fillStyle = "#28713c";
-    ctx.fillRect(x + width - 7, bodyY, 4, bodyHeight);
-
-    const capY = isTop ? y + height - capHeight : y;
-    ctx.fillStyle = "#398c48";
-    ctx.fillRect(x, capY, width, capHeight);
-    ctx.fillStyle = "#72d66b";
-    ctx.fillRect(x + 2, capY + 1, 4, capHeight - 2);
-    ctx.fillStyle = "#28713c";
-    ctx.fillRect(x + width - 4, capY + 1, 2, capHeight - 2);
-  }
-
-  function drawPipes() {
-    for (const pipe of pipes) {
-      const x = Math.round(pipe.x);
-      const gapBottom = pipe.gapY + CONFIG.gapHeight;
-      drawPipe(x, 0, CONFIG.pipeWidth, pipe.gapY, true);
-      drawPipe(x, gapBottom, CONFIG.pipeWidth,
-        HEIGHT - CONFIG.groundHeight - gapBottom, false);
+  function drawPlatforms(){
+    let start=0;
+    for(const o of obstacles){
+      const x=Math.round(o.x);
+      if(x>start)rect(start,FLOOR,x-start,5,"#4bba91");
+      if(o.type===1){rect(x,FLOOR-13,15,13,"#f3b84b");rect(x+3,FLOOR-10,4,3,"#ffe39a");}
+      if(o.type===2){rect(x,FLOOR-22,23,22,"#e87968");rect(x+4,FLOOR-18,5,5,"#ffb18d");}
+      start=x+(o.type===2?23:o.type===1?15:0);
     }
+    if(start<W)rect(start,FLOOR,W-start,5,"#4bba91");
+    rect(0,FLOOR+5,W,2,"#263957");
   }
-
-  function drawCat() {
-    const x = Math.round(player.x), y = Math.round(player.y);
-    // Абстрактная кошка из пиксельных прямоугольников — временный процедурный спрайт.
-    ctx.fillStyle = "#26334c";
-    ctx.fillRect(x + 2, y + 1, 3, 4);
-    ctx.fillRect(x + 10, y + 1, 3, 4);
-    ctx.fillRect(x + 1, y + 4, 13, 7);
-    ctx.fillRect(x + 4, y + 9, 8, 3);
-    ctx.fillRect(x - 2, y + 7, 4, 2);
-    ctx.fillStyle = "#f2b7a5";
-    ctx.fillRect(x + 3, y + 2, 1, 2);
-    ctx.fillRect(x + 11, y + 2, 1, 2);
-    ctx.fillStyle = "#f4e8d5";
-    ctx.fillRect(x + 3, y + 5, 9, 4);
-    ctx.fillStyle = "#27334a";
-    ctx.fillRect(x + 5, y + 5, 1, 2);
-    ctx.fillRect(x + 10, y + 5, 1, 2);
-    ctx.fillRect(x + 8, y + 8, 2, 1);
-    ctx.fillStyle = "#d98f83";
-    ctx.fillRect(x + 7, y + 7, 2, 1);
+  function drawCat(){
+    const x=Math.round(player.x),y=Math.round(player.y);
+    ctx.save();ctx.translate(x+7,y+7);ctx.rotate(player.rot);
+    rect(-6,-5,4,5,"#f3c66a");rect(2,-5,4,5,"#f3c66a");
+    rect(-7,-2,14,10,"#f3c66a");rect(-4,5,9,3,"#f3c66a");
+    rect(-4,0,2,2,"#26334c");rect(3,0,2,2,"#26334c");
+    rect(-1,3,2,1,"#d97872");
+    ctx.restore();
+    if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-13,y+9,8,2,"#7ce0c3");}
   }
-
-  function drawGround() {
-    const groundY = HEIGHT - CONFIG.groundHeight;
-    ctx.fillStyle = "#d9bd70";
-    ctx.fillRect(0, groundY, WIDTH, CONFIG.groundHeight);
-    ctx.fillStyle = "#9b8049";
-    ctx.fillRect(0, groundY, WIDTH, 2);
-    ctx.fillStyle = "#f0d88d";
-    const offset = (frame * CONFIG.scrollSpeed) % 12;
-    for (let x = -offset; x < WIDTH; x += 12) ctx.fillRect(x, groundY + 4, 6, 2);
-  }
-
-  function draw() {
-    drawBackground();
-    drawPipes();
-    drawGround();
+  function draw(){
+    background();drawPlatforms();
+    for(const p of particles)rect(p.x,p.y,2,2,"#7ce0c3");
     drawCat();
+    if(state==="playing"&&!dashReady){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/13),3,"#7ce0c3");}
   }
-
-  function loop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
-    accumulator += Math.min(timestamp - lastTime, 100);
-    lastTime = timestamp;
-    while (accumulator >= STEP) {
-      update();
-      accumulator -= STEP;
-    }
-    draw();
-    requestAnimationFrame(loop);
+  function loop(t){
+    if(!last)last=t;acc+=Math.min(t-last,100);last=t;
+    while(acc>=STEP){update();acc-=STEP;}
+    draw();requestAnimationFrame(loop);
   }
-
-  function handleInput(event) {
-    if (event.type === "keydown") {
-      if (!["Space", "ArrowUp", "KeyW"].includes(event.code)) return;
-      event.preventDefault();
-      if (event.repeat) return;
-    }
-    flap();
-  }
-
-  canvas.addEventListener("pointerdown", handleInput);
-  overlay.addEventListener("pointerdown", handleInput);
-  window.addEventListener("keydown", handleInput);
-  reset();
-  requestAnimationFrame(loop);
+  canvas.addEventListener("pointerdown",jump);
+  jumpBtn.addEventListener("pointerdown",e=>{e.preventDefault();jump();});
+  dashBtn.addEventListener("pointerdown",e=>{e.preventDefault();dash();});
+  window.addEventListener("keydown",e=>{
+    if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat)jump();}
+    if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
+  });
+  reset();requestAnimationFrame(loop);
 })();
