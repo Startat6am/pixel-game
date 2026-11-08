@@ -12,9 +12,11 @@
   const characterButtons=[...document.querySelectorAll("[data-character]")];
   let selectedCharacter="classic";
     const metricsEl=document.getElementById("jump-metrics");
+  const boosterHud=document.getElementById("booster-hud"),boosterLabel=document.getElementById("booster-label"),boosterFill=document.getElementById("booster-fill");
   let player,obstacles,platforms,candies,particles,distance,state,frame,speed,dashTimer,dashReady,dashCharges,last=0,acc=0;
   let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
-  let candyCount=0,specialUnlocked=false,specialFlash=0,specialLabelTimer=0,shieldCharges=0;
+  let candyCount=0,specialUnlocked=false,specialFlash=0,specialLabelTimer=0,shieldCharges=0,specialCooldown=0;
+  const SPECIAL_COOLDOWN=15*60;
   const COYOTE_FRAMES=7;
   const initialPlatforms=[[235,126,76],[329,114,76],[423,124,76],[517,112,76],[611,126,76],[705,114,76],[799,124,76]];
   const initial=[
@@ -29,10 +31,10 @@
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     platforms=mode==="game"?initialPlatforms.map(([x,y,width])=>({x,y,width,height:6})):[];
     candies=platforms.map((p,i)=>({x:p.x+p.width/2,y:p.y-10,phase:i*1.7}));
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashCharges=1;dashReady=true;candyCount=0;specialUnlocked=false;specialFlash=0;specialLabelTimer=0;shieldCharges=0;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashCharges=1;dashReady=true;candyCount=0;specialUnlocked=false;specialFlash=0;specialLabelTimer=0;shieldCharges=0;specialCooldown=0;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
-    overlay.classList.remove("is-hidden");updateMetrics();
+    overlay.classList.remove("is-hidden");updateMetrics();updateBoosterHud();
   }
   function start(){
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
@@ -50,10 +52,21 @@
     selectedCharacter=name;
     characterButtons.forEach(button=>button.classList.toggle("is-selected",button.dataset.character===name));
   }
+  function updateBoosterHud(){
+    if(mode!=="game"){boosterHud.classList.add("is-hidden");return;}
+    boosterHud.classList.remove("is-hidden");
+    boosterHud.classList.toggle("is-unlocked",specialUnlocked&&specialCooldown<=0);
+    boosterHud.classList.toggle("is-cooling",specialUnlocked&&specialCooldown>0);
+    if(!specialUnlocked){boosterLabel.textContent="БУСТЕР · "+Math.min(candyCount,10)+"/10";boosterFill.style.width=(Math.min(candyCount,10)*10)+"%";boosterHud.classList.remove("is-unlocked","is-cooling");return;}
+    if(specialCooldown>0){const progress=1-specialCooldown/SPECIAL_COOLDOWN;boosterLabel.textContent="ПЕРЕЗАРЯДКА · "+(specialCooldown/60).toFixed(1)+"с";boosterFill.style.width=(Math.max(0,Math.min(1,progress))*100)+"%";}
+    else{boosterLabel.textContent="БУСТЕР · ГОТОВ";boosterFill.style.width="100%";}
+  }
+  function consumeSpecial(){if(!specialUnlocked||specialCooldown>0)return false;specialCooldown=SPECIAL_COOLDOWN;updateBoosterHud();return true;}
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
     if(state==="playing"&&!player.grounded&&selectedCharacter==="violet"&&specialUnlocked&&player.extraJumpAvailable){
+      if(!consumeSpecial())return;
       player.vy=-4.5;player.jumpCut=false;player.extraJumpAvailable=false;player.rot=0;
       jumpHeld=true;jumpHoldFrames=0;jumpAge=0;jumpPower=4.5;
       jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;
@@ -96,11 +109,13 @@
     if(state==="gameover")reset(mode);
     start();
     if(state!=="playing"||dashCharges<=0)return;
+    const usesSpecialDash=selectedCharacter==="classic"&&specialUnlocked&&specialCooldown<=0&&dashCharges===1;
     const airborne=!player.grounded;
     const comboWindow=24;
     const combo=airborne&&jumpAge<=comboWindow?1-jumpAge/comboWindow:0;
     jumpHeld=false;player.jumpCut=true;
     dashTimer=15;dashCharges--;dashReady=dashCharges>0;
+    if(usesSpecialDash)consumeSpecial();
     if(combo>0){
       const angleFactor=Math.min(1,jumpPower/4.7);
       const boost=(0.15+0.25*angleFactor)*combo*(2/3);
@@ -113,6 +128,8 @@
   }
   function update(){
     frame++;if(state!=="playing")return;
+    if(specialCooldown>0){specialCooldown=Math.max(0,specialCooldown-1);if(specialCooldown===0){if(selectedCharacter==="mint")shieldCharges=Math.max(shieldCharges,1);if(selectedCharacter==="violet"&&!player.grounded)player.extraJumpAvailable=true;}}
+    updateBoosterHud();
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     const previousBottom=player.y+player.h;
     if(specialFlash>0)specialFlash--;if(specialLabelTimer>0)specialLabelTimer--;if(player.shieldTimer>0)player.shieldTimer--;
@@ -134,7 +151,7 @@
     }
     if(landed|| (player.y+player.h>=FLOOR&&!overGap)){
       if(!landed)player.y=FLOOR-player.h;
-      player.vy=0;player.grounded=true;dashCharges=selectedCharacter==="classic"&&specialUnlocked?2:1;dashReady=true;
+      player.vy=0;player.grounded=true;dashCharges=selectedCharacter==="classic"&&specialUnlocked&&specialCooldown<=0?2:1;dashReady=true;
       if(selectedCharacter==="violet"&&specialUnlocked)player.extraJumpAvailable=true;
       coyoteTimer=COYOTE_FRAMES;
       if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
@@ -168,13 +185,16 @@
     for(const c of candies){
       const bob=Math.sin(frame*.12+c.phase)*2;
       if(Math.abs((player.x+player.w/2)-c.x)<10&&Math.abs((player.y+player.h/2)-(c.y+bob))<13){
-        const cx=c.x,cy=c.y;c.x=-100;candyCount++;
+        const cx=c.x,cy=c.y;c.x=-100;
+        if(specialUnlocked&&specialCooldown>0){specialCooldown=Math.max(0,specialCooldown-60);if(specialCooldown===0){if(selectedCharacter==="mint")shieldCharges=Math.max(shieldCharges,1);if(selectedCharacter==="violet"&&!player.grounded)player.extraJumpAvailable=true;}updateBoosterHud();}
+        else if(!specialUnlocked)candyCount++;
         for(let i=0;i<7;i++)particles.push({x:cx,y:cy,vx:(Math.random()-.5)*2,vy:-Math.random()*1.8,life:14,special:true});
-        if(candyCount%10===0){
+        if(!specialUnlocked&&candyCount>=10){
           specialUnlocked=true;specialFlash=90;specialLabelTimer=90;
           if(selectedCharacter==="classic")dashCharges=Math.max(dashCharges,2);dashReady=dashCharges>0;
-          if(selectedCharacter==="mint")shieldCharges++;
+          if(selectedCharacter==="mint")shieldCharges=1;
           if(selectedCharacter==="violet"&&player.grounded)player.extraJumpAvailable=true;
+          updateBoosterHud();
           for(let i=0;i<24;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:28,special:true});
         }
       }
@@ -187,8 +207,8 @@
       if(oh&&px<o.x+ow&&px+pw>o.x&&py<FLOOR&&py+ph>FLOOR-oh){
         if(selectedCharacter==="mint"&&player.shieldTimer>0){
           // The active shield safely carries the cat through the obstacle.
-        }else if(selectedCharacter==="mint"&&shieldCharges>0){
-          shieldCharges--;player.shieldTimer=70;
+        }else if(selectedCharacter==="mint"&&shieldCharges>0&&specialCooldown<=0){
+          shieldCharges--;consumeSpecial();player.shieldTimer=70;
           for(let i=0;i<16;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:22,special:true});
         }else{gameOver();break;}
       }
@@ -294,12 +314,12 @@
     while(acc>=STEP){update();acc-=STEP;}
     draw();requestAnimationFrame(loop);
   }
-  canvas.addEventListener("pointerdown",e=>{if(state==="playing"){e.preventDefault();jumpHeld=true;jump();}});
-  jumpBtn.addEventListener("pointerdown",e=>{e.preventDefault();jumpHeld=true;jump();});
+  canvas.addEventListener("pointerdown",e=>{if(e.button!==0||state!=="playing")return;e.preventDefault();e.stopPropagation();jumpHeld=true;jump();});
+  jumpBtn.addEventListener("pointerdown",e=>{if(e.button!==0)return;e.preventDefault();e.stopPropagation();jumpHeld=true;jump();});
   window.addEventListener("pointerup",releaseJump);
   window.addEventListener("pointercancel",releaseJump);
   window.addEventListener("blur",releaseJump);
-  dashBtn.addEventListener("pointerdown",e=>{e.preventDefault();dash();});
+  dashBtn.addEventListener("pointerdown",e=>{if(e.button!==0)return;e.preventDefault();e.stopPropagation();dash();});
   window.addEventListener("keydown",e=>{
     if(["Space","ArrowUp","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat){jumpHeld=true;jump();}}
     if(["ShiftLeft","ShiftRight","ArrowLeft","KeyX"].includes(e.code)){e.preventDefault();if(!e.repeat)dash();}
