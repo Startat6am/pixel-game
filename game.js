@@ -172,7 +172,7 @@
         for(let i=0;i<7;i++)particles.push({x:cx,y:cy,vx:(Math.random()-.5)*2,vy:-Math.random()*1.8,life:14,special:true});
         if(candyCount%10===0){
           specialUnlocked=true;specialFlash=90;specialLabelTimer=90;
-          if(selectedCharacter==="classic")dashCharges=Math.max(dashCharges,2);
+          if(selectedCharacter==="classic")dashCharges=Math.max(dashCharges,2);dashReady=dashCharges>0;
           if(selectedCharacter==="mint")shieldCharges++;
           if(selectedCharacter==="violet"&&player.grounded)player.extraJumpAvailable=true;
           for(let i=0;i<24;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:28,special:true});
@@ -185,7 +185,9 @@
       if(o.type===3)continue;
       const ow=o.type===2?23:o.type===1?15:0,oh=o.type===2?22:o.type===1?13:0;
       if(oh&&px<o.x+ow&&px+pw>o.x&&py<FLOOR&&py+ph>FLOOR-oh){
-        if(selectedCharacter==="mint"&&shieldCharges>0){
+        if(selectedCharacter==="mint"&&player.shieldTimer>0){
+          // The active shield safely carries the cat through the obstacle.
+        }else if(selectedCharacter==="mint"&&shieldCharges>0){
           shieldCharges--;player.shieldTimer=70;
           for(let i=0;i<16;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:22,special:true});
         }else{gameOver();break;}
