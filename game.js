@@ -12,10 +12,11 @@
   const characterButtons=[...document.querySelectorAll("[data-character]")];
   let selectedCharacter="classic";
     const metricsEl=document.getElementById("jump-metrics");
-  let player,obstacles,platforms,particles,distance,state,frame,speed,dashTimer,dashReady,last=0,acc=0;
+  let player,obstacles,platforms,candies,particles,distance,state,frame,speed,dashTimer,dashReady,dashCharges,last=0,acc=0;
   let jumpHeld=false,jumpHoldFrames=0,mode="game",jumpStats=null,lastStats=null,jumpAge=0,jumpPower=4.7,coyoteTimer=0;
+  let candyCount=0,specialUnlocked=false,specialFlash=0,specialLabelTimer=0,shieldCharges=0;
   const COYOTE_FRAMES=7;
-  const initialPlatforms=[[225,119,62],[335,101,58],[455,127,72],[585,108,64],[720,120,68]];
+  const initialPlatforms=[[235,126,76],[329,114,76],[423,124,76],[517,112,76],[611,126,76],[705,114,76],[799,124,76]];
   const initial=[
     [210,0],[300,3],[390,1],[485,0],[555,0],[650,2],[745,3],[820,0],
     [910,1],[1005,3],[1090,2],[1190,0],[1270,3],[1360,1],[1460,3],
@@ -24,10 +25,11 @@
   ];
   function reset(nextMode=mode){
     mode=nextMode;showMenu();dashBtn.hidden=false;dashBtn.style.display="flex";
-    player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
+    player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0,extraJumpAvailable:false,shieldTimer:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     platforms=mode==="game"?initialPlatforms.map(([x,y,width])=>({x,y,width,height:6})):[];
-    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
+    candies=platforms.map((p,i)=>({x:p.x+p.width/2,y:p.y-10,phase:i*1.7}));
+    particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashCharges=1;dashReady=true;candyCount=0;specialUnlocked=false;specialFlash=0;specialLabelTimer=0;shieldCharges=0;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
     last=0;acc=0;state="ready";scoreEl.textContent="0";
     title.textContent="PIXEL DASH";hint.textContent="ВЫБЕРИ РЕЖИМ ИГРЫ";
     overlay.classList.remove("is-hidden");updateMetrics();
@@ -51,6 +53,13 @@
   function jump(){
     if(state==="gameover"){reset(mode);start();}
     start();
+    if(state==="playing"&&!player.grounded&&selectedCharacter==="violet"&&specialUnlocked&&player.extraJumpAvailable){
+      player.vy=-4.5;player.jumpCut=false;player.extraJumpAvailable=false;player.rot=0;
+      jumpHeld=true;jumpHoldFrames=0;jumpAge=0;jumpPower=4.5;
+      jumpStats={startY:player.y,peak:0,startDistance:distance};lastStats=null;
+      for(let i=0;i<9;i++)particles.push({x:player.x+6,y:player.y+10,vx:(Math.random()-.5)*2,vy:-Math.random()*1.5,life:18,special:true});
+      return;
+    }
     if((player.grounded||coyoteTimer>0)&&state==="playing"){
       const coyoteJump=!player.grounded&&coyoteTimer>0;
       if(coyoteJump){
@@ -86,12 +95,12 @@
   function dash(){
     if(state==="gameover")reset(mode);
     start();
-    if(state!=="playing"||!dashReady)return;
+    if(state!=="playing"||dashCharges<=0)return;
     const airborne=!player.grounded;
     const comboWindow=24;
     const combo=airborne&&jumpAge<=comboWindow?1-jumpAge/comboWindow:0;
     jumpHeld=false;player.jumpCut=true;
-    dashTimer=15;dashReady=false;
+    dashTimer=15;dashCharges--;dashReady=dashCharges>0;
     if(combo>0){
       const angleFactor=Math.min(1,jumpPower/4.7);
       const boost=(0.15+0.25*angleFactor)*combo;
@@ -106,6 +115,7 @@
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     const previousBottom=player.y+player.h;
+    if(specialFlash>0)specialFlash--;if(specialLabelTimer>0)specialLabelTimer--;if(player.shieldTimer>0)player.shieldTimer--;
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
     if(dashTimer>0){dashTimer--;player.vy+=0.035;}else if(jumpHeld&&!player.jumpCut&&player.vy<0&&jumpHoldFrames<12){player.vy+=0.17;jumpHoldFrames++;}else player.vy+=0.24;
@@ -124,15 +134,19 @@
     }
     if(landed|| (player.y+player.h>=FLOOR&&!overGap)){
       if(!landed)player.y=FLOOR-player.h;
-      player.vy=0;player.grounded=true;dashReady=true;coyoteTimer=COYOTE_FRAMES;
+      player.vy=0;player.grounded=true;dashCharges=selectedCharacter==="classic"&&specialUnlocked?2:1;dashReady=true;
+      if(selectedCharacter==="violet"&&specialUnlocked)player.extraJumpAvailable=true;
+      coyoteTimer=COYOTE_FRAMES;
       if(jumpStats){lastStats={peak:jumpStats.peak,length:distance-jumpStats.startDistance};jumpStats=null;updateMetrics();}
     }else player.grounded=false;
     player.rot=player.grounded?0:player.rot+0.1;
     if(mode==="game"){
       for(const o of obstacles)o.x-=moveSpeed;
       for(const p of platforms)p.x-=moveSpeed;
+      for(const c of candies)c.x-=moveSpeed;
       obstacles=obstacles.filter(o=>o.x+(o.width||24)>-30);
       platforms=platforms.filter(p=>p.x+p.width>-10);
+      candies=candies.filter(c=>c.x>-10);
       const far=obstacles.length?obstacles[obstacles.length-1].x:0;
       if(far<W+400){
         const x=Math.max(W+90,far+95+Math.random()*40),r=Math.random();
@@ -142,10 +156,27 @@
       const lastPlatform=platforms.length?platforms[platforms.length-1]:null;
       const platformEdge=lastPlatform?lastPlatform.x+lastPlatform.width:0;
       if(platformEdge<W+420){
-        const x=Math.max(W+110,platformEdge+105+Math.random()*85);
-        const heights=[96,108,120,130];
-        const y=heights[Math.floor(Math.random()*heights.length)];
-        platforms.push({x,y,width:48+Math.random()*32,height:6});
+        const x=Math.max(W+100,platformEdge+18+Math.random()*18);
+        const prevY=lastPlatform?lastPlatform.y:126;
+        const step=[-10,0,10][Math.floor(Math.random()*3)];
+        const y=Math.max(106,Math.min(130,prevY+step));
+        const p={x,y,width:68+Math.random()*14,height:6};
+        platforms.push(p);
+        candies.push({x:p.x+p.width/2,y:p.y-10,phase:Math.random()*6});
+      }
+    }
+    for(const c of candies){
+      const bob=Math.sin(frame*.12+c.phase)*2;
+      if(Math.abs((player.x+player.w/2)-c.x)<10&&Math.abs((player.y+player.h/2)-(c.y+bob))<13){
+        const cx=c.x,cy=c.y;c.x=-100;candyCount++;
+        for(let i=0;i<7;i++)particles.push({x:cx,y:cy,vx:(Math.random()-.5)*2,vy:-Math.random()*1.8,life:14,special:true});
+        if(candyCount%10===0){
+          specialUnlocked=true;specialFlash=90;specialLabelTimer=90;
+          if(selectedCharacter==="classic")dashCharges=Math.max(dashCharges,2);
+          if(selectedCharacter==="mint")shieldCharges++;
+          if(selectedCharacter==="violet"&&player.grounded)player.extraJumpAvailable=true;
+          for(let i=0;i<24;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:28,special:true});
+        }
       }
     }
     particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy||0;if(p.dust){p.vx*=0.88;p.vy+=0.07;}p.life--;});particles=particles.filter(p=>p.life>0);
@@ -153,7 +184,12 @@
     if(mode==="game")for(const o of obstacles){
       if(o.type===3)continue;
       const ow=o.type===2?23:o.type===1?15:0,oh=o.type===2?22:o.type===1?13:0;
-      if(oh&&px<o.x+ow&&px+pw>o.x&&py<FLOOR&&py+ph>FLOOR-oh){gameOver();break;}
+      if(oh&&px<o.x+ow&&px+pw>o.x&&py<FLOOR&&py+ph>FLOOR-oh){
+        if(selectedCharacter==="mint"&&shieldCharges>0){
+          shieldCharges--;player.shieldTimer=70;
+          for(let i=0;i<16;i++)particles.push({x:player.x+6,y:player.y+7,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:22,special:true});
+        }else{gameOver();break;}
+      }
     }
     if(mode==="game"&&player.y>H+18)gameOver();
     scoreEl.textContent=String(Math.floor(distance/10));
@@ -227,8 +263,15 @@
     ctx.restore();
     if(dashTimer>0){rect(x-8,y+5,7,2,"#7ce0c3");rect(x-14,y+9,9,2,"#7ce0c3");}
   }
+  function drawCandy(){
+    for(const c of candies){
+      const x=Math.round(c.x),y=Math.round(c.y+Math.sin(frame*.12+c.phase)*2);
+      rect(x-3,y-3,6,7,"#ff8eb5");rect(x-5,y-1,2,3,"#ffd2e1");rect(x+3,y-1,2,3,"#ffd2e1");
+      rect(x-1,y-2,2,5,"#ffe58a");rect(x-2,y-4,4,2,"#fff0b5");
+    }
+  }
   function draw(){
-    background();drawPlatforms();
+    background();drawPlatforms();drawCandy();
     particles.forEach(p=>{
       if(p.dust){
         const alpha=Math.max(0.18,p.life/14);
@@ -236,9 +279,12 @@
         rect(p.x,p.y,p.size,2,"#c5d2c8");
         if(p.size>3)rect(p.x+1,p.y+2,2,1,"#829d91");
         ctx.globalAlpha=1;
-      }else rect(p.x,p.y,2,2,"#7ce0c3");
+      }else rect(p.x,p.y,p.special?3:2,p.special?3:2,p.special?"#ffe58a":"#7ce0c3");
     });
     drawCat();
+    if(player.shieldTimer>0){ctx.globalAlpha=.65;ctx.strokeStyle="#7ce0c3";ctx.lineWidth=2;ctx.beginPath();ctx.arc(player.x+6,player.y+7,13+Math.sin(frame*.3)*2,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+    if(specialFlash>0){ctx.globalAlpha=specialFlash/90;ctx.strokeStyle=selectedCharacter==="mint"?"#7ce0c3":selectedCharacter==="violet"?"#c5c8ff":"#ffe58a";ctx.lineWidth=2;ctx.beginPath();ctx.arc(player.x+6,player.y+7,12+(90-specialFlash)*.22,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+    if(specialLabelTimer>0){ctx.fillStyle="#fff0b5";ctx.font="bold 9px Courier New";ctx.textAlign="center";ctx.fillText(selectedCharacter==="classic"?"DOUBLE DASH":selectedCharacter==="mint"?"MINT SHIELD":"DOUBLE JUMP",160,23);}
     if(state==="playing"&&!dashReady&&mode==="game"){rect(8,9,34,3,"#34425f");rect(8,9,34*(1-dashTimer/15),3,"#7ce0c3");}
   }
   function loop(t){
