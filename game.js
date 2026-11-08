@@ -92,7 +92,7 @@
     frame++;if(state!=="playing")return;
     if(!player.grounded){jumpAge++;if(coyoteTimer>0)coyoteTimer--;}else{jumpAge=0;coyoteTimer=COYOTE_FRAMES;}
     if(demoRunning&&!demoJumped&&!player.grounded&&coyoteTimer>0&&coyoteTimer<=5){
-      demoJumped=true;jump();releaseJump();
+      demoJumped=true;jump();
     }
     const moveSpeed=speed+(dashTimer>0?2.4:0);
     distance+=moveSpeed;
