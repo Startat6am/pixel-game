@@ -46,7 +46,8 @@
     distance+=speed; speed=Math.min(2.45,1.65+distance/9000);
     if(dashTimer>0){dashTimer--;player.vy+=0.025;} else player.vy+=0.19;
     player.y+=player.vy;
-    if(player.y+player.h>=FLOOR){player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;}
+    const overGap=obstacles.some(o=>o.type===3&&player.x+player.w>o.x&&player.x<o.x+o.width);
+    if(player.y+player.h>=FLOOR&&!overGap){player.y=FLOOR-player.h;player.vy=0;player.grounded=true;dashReady=true;}
     else player.grounded=false;
     if(player.grounded)player.rot=0;else player.rot+=0.09;
     for(const o of obstacles)o.x-=speed;
@@ -61,7 +62,7 @@
     particles=particles.filter(p=>p.life>0);
     const px=player.x+2, py=player.y+2, pw=player.w-4, ph=player.h-4;
     for(const o of obstacles){
-      const ow=o.type===2?23:15, oh=o.type===2?22: o.type===1?27:0;
+      const ow=o.type===3?(o.width||42):o.type===2?23:15, oh=o.type===2?22:o.type===1?27:0;
       if(!oh)continue;
       const ox=o.x, oy=FLOOR-oh;
       if(px<ox+ow&&px+pw>ox&&py<oy+oh&&py+ph>oy){gameOver();break;}
