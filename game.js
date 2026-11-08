@@ -48,7 +48,8 @@
     metricsEl.textContent="ВЫСОТА "+Math.round(stats.peak)+" px   ·   ДЛИНА "+Math.round(stats.length??(distance-stats.startDistance))+" px";
   }
   function dash(){
-    if(state==="gameover")reset();
+    if(mode!=="game")return;
+    if(state==="gameover")reset(mode);
     start();
     if(state!=="playing"||!dashReady)return;
     dashTimer=15;dashReady=false;releaseJump();player.vy=Math.min(player.vy,-0.55);
