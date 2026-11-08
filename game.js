@@ -168,21 +168,23 @@
     };
     const fur=palettes[selectedCharacter]||palettes.classic;
     if(selectedCharacter==="violet"){
-      // Сумрак: квадратная голова и высокие острые уши.
-      rect(-7,-9,4,8,fur.body);rect(-5,-7,2,3,"#343844");
-      rect(3,-9,4,8,fur.body);rect(3,-7,2,3,"#343844");
-      rect(-7,-3,14,11,fur.body);rect(-6,8,12,2,fur.body);
-      rect(-4,4,8,4,fur.muzzle);
-      rect(-4,-1,2,2,fur.eyes);rect(3,-1,2,2,fur.eyes);
-      rect(-1,5,2,1,fur.nose);rect(-5,-5,2,1,fur.accent);
+      // Сумрак: низкий приземистый силуэт, широкая квадратная морда и острые уши.
+      rect(-8,-10,3,7,fur.body);rect(-7,-10,2,3,"#343844");
+      rect(5,-10,3,7,fur.body);rect(5,-10,2,3,"#343844");
+      rect(-8,-4,16,10,fur.body);rect(-7,6,14,2,fur.body);
+      rect(-6,1,12,4,fur.muzzle);
+      rect(-5,-2,3,3,fur.eyes);rect(3,-2,3,3,fur.eyes);
+      rect(-1,3,2,1,fur.nose);rect(-6,-6,2,1,fur.accent);
+      rect(-7,7,5,2,fur.body);rect(2,7,5,2,fur.body);
     }else if(selectedCharacter==="mint"){
-      // Мята: более лёгкий силуэт, высокие наклонные ушки и маленькая чёлка.
-      rect(-7,-7,3,7,fur.body);rect(-6,-9,3,3,fur.body);
-      rect(4,-7,3,7,fur.body);rect(3,-9,3,3,fur.body);
-      rect(-6,-3,12,3,fur.body);rect(-7,0,14,7,fur.body);
-      rect(-5,7,10,2,fur.body);rect(-3,4,7,3,fur.muzzle);
-      rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);
-      rect(-1,4,2,1,fur.nose);rect(-1,-5,3,2,fur.accent);
+      // Мята: мягкая округлая мордочка, одно ушко чуть наклонено и пушистая чёлка.
+      rect(-7,-8,4,8,fur.body);rect(-6,-10,2,3,fur.body);
+      rect(3,-7,4,7,fur.body);rect(5,-9,2,3,fur.body);
+      rect(-6,-3,12,3,fur.body);rect(-7,0,14,6,fur.body);
+      rect(-5,6,10,2,fur.body);rect(-4,3,8,3,fur.muzzle);
+      rect(-4,-1,2,2,fur.eyes);rect(3,-1,2,2,fur.eyes);
+      rect(-1,3,2,1,fur.nose);rect(-2,-5,4,2,fur.accent);
+      rect(-8,2,2,3,fur.body);rect(6,2,2,3,fur.body);
     }else{
       rect(-6,-5,4,5,fur.body);rect(2,-5,4,5,fur.body);
       rect(-7,-2,14,10,fur.body);rect(-4,5,9,3,fur.muzzle);
