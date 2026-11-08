@@ -168,13 +168,21 @@
     };
     const fur=palettes[selectedCharacter]||palettes.classic;
     if(selectedCharacter==="violet"){
-      // Сумрак: почти чёрная шерсть, светлые глаза и более резкий силуэт.
-      rect(-7,-7,4,7,fur.body);rect(-5,-5,2,3,"#343844");
-      rect(3,-7,4,7,fur.body);rect(3,-5,2,3,"#343844");
-      rect(-6,-4,12,3,fur.body);rect(-7,-1,14,7,fur.body);
-      rect(-5,6,11,3,fur.body);rect(-4,3,9,3,fur.muzzle);
+      // Сумрак: квадратная голова и высокие острые уши.
+      rect(-7,-9,4,8,fur.body);rect(-5,-7,2,3,"#343844");
+      rect(3,-9,4,8,fur.body);rect(3,-7,2,3,"#343844");
+      rect(-7,-3,14,11,fur.body);rect(-6,8,12,2,fur.body);
+      rect(-4,4,8,4,fur.muzzle);
       rect(-4,-1,2,2,fur.eyes);rect(3,-1,2,2,fur.eyes);
-      rect(-1,3,2,1,fur.nose);rect(-5,-4,2,1,fur.accent);
+      rect(-1,5,2,1,fur.nose);rect(-5,-5,2,1,fur.accent);
+    }else if(selectedCharacter==="mint"){
+      // Мята: более лёгкий силуэт, высокие наклонные ушки и маленькая чёлка.
+      rect(-7,-7,3,7,fur.body);rect(-6,-9,3,3,fur.body);
+      rect(4,-7,3,7,fur.body);rect(3,-9,3,3,fur.body);
+      rect(-6,-3,12,3,fur.body);rect(-7,0,14,7,fur.body);
+      rect(-5,7,10,2,fur.body);rect(-3,4,7,3,fur.muzzle);
+      rect(-4,0,2,2,fur.eyes);rect(3,0,2,2,fur.eyes);
+      rect(-1,4,2,1,fur.nose);rect(-1,-5,3,2,fur.accent);
     }else{
       rect(-6,-5,4,5,fur.body);rect(2,-5,4,5,fur.body);
       rect(-7,-2,14,10,fur.body);rect(-4,5,9,3,fur.muzzle);
