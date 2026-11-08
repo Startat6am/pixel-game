@@ -7,6 +7,8 @@
   const jumpBtn=document.getElementById("jump-btn"),dashBtn=document.getElementById("dash-btn");
   const playBtn=document.getElementById("play-mode"),trainingBtn=document.getElementById("training-mode");
   const characterToggle=document.getElementById("character-toggle"),characterChoices=document.getElementById("character-choices");
+  const menuScreen=document.getElementById("menu-screen"),characterScreen=document.getElementById("character-screen");
+  const backMenu=document.getElementById("back-menu");
   const characterButtons=[...document.querySelectorAll("[data-character]")];
   let selectedCharacter="classic";
     const metricsEl=document.getElementById("jump-metrics");
@@ -20,7 +22,7 @@
     [2240,0],[2340,2],[2450,0]
   ];
   function reset(nextMode=mode){
-    mode=nextMode;characterChoices.classList.add("is-hidden");dashBtn.hidden=false;dashBtn.style.display="flex";
+    mode=nextMode;showMenu();dashBtn.hidden=false;dashBtn.style.display="flex";
     player={x:68,y:FLOOR-14,vy:0,w:13,h:14,grounded:true,rot:0};
     obstacles=mode==="game"?initial.map(([x,type])=>({x,type,width:type===3?48:0})):[];
     particles=[];distance=0;frame=0;speed=1.65;dashTimer=0;dashReady=true;jumpHeld=false;jumpHoldFrames=0;jumpStats=null;lastStats=null;jumpAge=0;jumpPower=4.7;coyoteTimer=0;
@@ -32,6 +34,14 @@
     if(state==="ready"){state="playing";overlay.classList.add("is-hidden");}
   }
   function chooseMode(nextMode){reset(nextMode);start();}
+  function showMenu(){
+    menuScreen.classList.remove("is-hidden");
+    characterScreen.classList.add("is-hidden");
+  }
+  function showCharacters(){
+    menuScreen.classList.add("is-hidden");
+    characterScreen.classList.remove("is-hidden");
+  }
   function chooseCharacter(name){
     selectedCharacter=name;
     characterButtons.forEach(button=>button.classList.toggle("is-selected",button.dataset.character===name));
@@ -206,7 +216,8 @@
   window.addEventListener("keyup",e=>{if(["Space","ArrowUp","KeyW"].includes(e.code))releaseJump();});
   playBtn.addEventListener("click",()=>chooseMode("game"));
   trainingBtn.addEventListener("click",()=>chooseMode("training"));
-  characterToggle.addEventListener("click",()=>characterChoices.classList.toggle("is-hidden"));
+  characterToggle.addEventListener("click",showCharacters);
+  backMenu.addEventListener("click",showMenu);
   characterButtons.forEach(button=>button.addEventListener("click",()=>chooseCharacter(button.dataset.character)));
   reset("game");requestAnimationFrame(loop);
 })();
